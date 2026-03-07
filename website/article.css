@@ -9,7 +9,12 @@
 .article-hero {
   position: relative;
   padding: calc(64px + var(--sp-16)) 0 var(--sp-12);
-  background: linear-gradient(170deg, var(--bg-warm) 0%, #F6F9E8 35%, #E8F5E9 65%, #E3F0E8 100%);
+  background: linear-gradient(170deg, 
+    var(--dawn-light) 0%, 
+    var(--bg-warm) 30%, 
+    var(--green-pale) 65%, 
+    var(--sage) 100%
+  );
   overflow: hidden;
   text-align: center;
 }
@@ -46,7 +51,7 @@
   letter-spacing: -0.03em;
   color: var(--ink);
   margin-bottom: var(--sp-4);
-  background: linear-gradient(135deg, var(--amber) 0%, #E8920E 50%, var(--green-dark) 100%);
+  background: linear-gradient(135deg, var(--amber) 0%, var(--ochre) 50%, var(--green-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

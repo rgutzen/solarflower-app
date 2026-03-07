@@ -1,0 +1,141 @@
+/* SPDX-FileCopyrightText: 2025 Robin Gutzen <robin.gutzen@outlook.com> */
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* ===================================================================
+   Solarflower — Solar Advisor Custom Styles
+   Extends Streamlit with solarpunk/soil-punk design system
+   =================================================================== */
+
+/* Extended color palette (Phase 1) */
+:root {
+  /* Brand colors */
+  --sf-amber:       #F5A623;
+  --sf-amber-dark:  #9A6207;
+  --sf-amber-light: #FFF3DC;
+  --sf-blue:        #2D7DD2;
+  --sf-blue-dark:   #1B5FA0;
+  --sf-blue-light:  #E8F1FB;
+  --sf-green:       #4CAF50;
+  --sf-green-light: #E8F5E9;
+  --sf-green-pale:  #F1F8E9;
+  --sf-sage:        #8FBD8F;
+  --sf-ink:         #1B2E1B;
+  --sf-ink-light:   #3D5240;
+
+  /* Extended: Earth & Dusk (Phase 1) */
+  --sf-terracotta:  #C75B39;
+  --sf-ochre:       #D4A03A;
+  --sf-clay:        #A67B5B;
+  --sf-dusk:        #6B5B95;
+  --sf-dawn:        #E8B4B8;
+  --sf-midnight:    #2D2D44;
+}
+
+/* Streamlit theme overrides */
+[data-testid="stApp"] {
+  background-color: #FCFCFA;
+}
+
+/* Header styling with gradient accent */
+h1, h2, h3 {
+  color: var(--sf-ink);
+}
+
+/* Primary button - amber */
+.stButton > button[kind="primary"] {
+  background-color: var(--sf-amber) !important;
+  color: var(--sf-ink) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+  background-color: var(--sf-amber-dark) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(245, 166, 35, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Secondary button - blue */
+.stButton > button[kind="secondary"] {
+  background-color: var(--sf-blue-dark) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+/* Card/box styling for metrics */
+[data-testid="stMetric"] {
+  background-color: #FCFCFA;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(76, 175, 80, 0.08);
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] {
+  background-color: #FEFDF5;
+  border-right: 1px solid rgba(76, 175, 80, 0.08);
+}
+
+/* Input focus states */
+input:focus, select:focus, textarea:focus {
+  border-color: var(--sf-amber) !important;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15) !important;
+}
+
+/* Tab styling */
+button[data-baseweb="tab"] {
+  border-radius: 8px 8px 0 0;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+  background-color: var(--sf-amber-light);
+  color: var(--sf-amber-dark);
+}
+
+/* Progress bar coloring */
+.stProgress > div > div > div {
+  background-color: var(--sf-amber);
+}
+
+/* Slider styling */
+div[data-testid="stSlider"] > div > div > div > div {
+  background-color: var(--sf-amber);
+}
+
+/* Expander styling */
+streamlit-expander {
+  border-radius: 12px;
+  border: 1px solid rgba(76, 175, 80, 0.08);
+}
+
+/* DataFrame/table styling */
+[data-testid="stDataFrame"] {
+  border-radius: 12px;
+  border: 1px solid rgba(76, 175, 80, 0.08);
+}
+
+/* Biophilic: gentle breathing animation for key metrics (Phase 4) */
+@keyframes breathe-gentle {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
+  50% { box-shadow: 0 0 12px 2px rgba(245, 166, 35, 0.1); }
+}
+
+[data-testid="stMetric"]:hover {
+  animation: breathe-gentle 4s ease-in-out infinite;
+}
+
+/* Smooth transitions throughout */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  [data-testid="stMetric"] {
+    padding: 12px;
+  }
+}

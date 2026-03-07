@@ -24,7 +24,9 @@ def render_sidebar(
       tilt_deg, panel_az_deg, albedo,
       module_params, inverter_params, inverter_type,
       n_modules, strings_per_inverter, n_inverters,
-      loss_budget,
+      loss_budget, degradation_rate,
+      horizon_azimuths, horizon_elevations,
+      econ (dict with Economics parameters),
       tilt_step, az_step,
       fetch_climate (bool)
     """
@@ -449,6 +451,16 @@ def render_sidebar(
             ),
         ) / 100
 
+        degradation_rate_pct = st.slider(
+            "Annual module degradation [%/yr]",
+            0.0, 2.0, 0.50, 0.05,
+            help=(
+                "Linear yield loss per year after first-year LID. "
+                "Premium HJT/TOPCon: ~0.3%/yr  ·  Standard PERC: 0.4–0.7%/yr  ·  Budget: ~0.8%/yr"
+            ),
+        )
+        cfg["degradation_rate"] = degradation_rate_pct / 100.0
+
         cfg["loss_budget"] = LossBudget(
             iam_model=iam_model,
             soiling=soiling,
@@ -466,7 +478,91 @@ def render_sidebar(
         st.caption(f"Combined system losses: **{total_loss:.1f}%**")
 
     # -----------------------------------------------------------------------
-    # 5. Orientation sweep settings
+    # 5. Near Shading / Horizon Profile
+    # -----------------------------------------------------------------------
+    with st.sidebar.expander("🏔 Near Shading / Horizon", expanded=False):
+        st.caption(
+            "Enter the horizon elevation angle (° above horizontal) at 8 compass points. "
+            "Use 0° for an unobstructed horizon. "
+            "Obstacles like trees or chimneys block the **direct beam** when the sun "
+            "is below your entered profile."
+        )
+        horizon_azimuths  = [0, 45, 90, 135, 180, 225, 270, 315]
+        horizon_labels    = ["N (0°)", "NE (45°)", "E (90°)", "SE (135°)",
+                             "S (180°)", "SW (225°)", "W (270°)", "NW (315°)"]
+        col_hz_l, col_hz_r = st.columns(2)
+        horizon_elevations = []
+        for i, (az, label) in enumerate(zip(horizon_azimuths, horizon_labels)):
+            col = col_hz_l if i % 2 == 0 else col_hz_r
+            elev = col.number_input(
+                label, min_value=0.0, max_value=60.0,
+                value=0.0, step=0.5, key=f"hz_{az}",
+            )
+            horizon_elevations.append(elev)
+        cfg["horizon_azimuths"]   = tuple(horizon_azimuths)
+        cfg["horizon_elevations"] = tuple(horizon_elevations)
+        if any(e > 0 for e in horizon_elevations):
+            max_el  = max(horizon_elevations)
+            max_dir = horizon_labels[horizon_elevations.index(max_el)]
+            st.caption(f"Highest obstacle: **{max_el:.1f}°** towards {max_dir}")
+
+    # -----------------------------------------------------------------------
+    # 6. Economics
+    # -----------------------------------------------------------------------
+    with st.sidebar.expander("💶 Economics", expanded=False):
+        st.caption(
+            "Financial parameters to compute payback period, NPV, and LCOE. "
+            "Defaults reflect the 2024 EU residential market."
+        )
+        system_cost_per_wp = st.number_input(
+            "System cost [€/Wp]",
+            min_value=0.1, max_value=5.0, value=1.10, step=0.05,
+            help="All-in installed cost per watt-peak DC. EU residential: ~0.9–1.3 €/Wp (2024).",
+        )
+        electricity_price = st.number_input(
+            "Electricity price [€/kWh]",
+            min_value=0.01, max_value=1.0, value=0.30, step=0.01,
+            help="Grid electricity price you displace (or feed-in tariff if all exported).",
+        )
+        price_escalation_pct = st.number_input(
+            "Annual price escalation [%/yr]",
+            min_value=0.0, max_value=10.0, value=2.0, step=0.5,
+            help="Expected annual increase in electricity price.",
+        )
+        discount_rate_pct = st.number_input(
+            "Discount rate [%/yr]",
+            min_value=0.0, max_value=15.0, value=4.0, step=0.5,
+            help="Opportunity cost of capital / WACC. ~4% homeowner, ~8% commercial.",
+        )
+        project_lifetime_yr = st.slider(
+            "Project lifetime [years]", min_value=10, max_value=30, value=25, step=1,
+        )
+        col_fi1, col_fi2 = st.columns(2)
+        with col_fi1:
+            feed_in_fraction = st.number_input(
+                "Feed-in fraction [%]",
+                min_value=0, max_value=100, value=30, step=5,
+                help="Fraction of production exported to grid. Remainder is self-consumed.",
+            )
+        with col_fi2:
+            feed_in_tariff = st.number_input(
+                "Feed-in tariff [€/kWh]",
+                min_value=0.0, max_value=0.5, value=0.08, step=0.01,
+                help="Payment per kWh exported. Set equal to electricity price for net-metering.",
+            )
+        cfg["econ"] = {
+            "cost_per_wp":    system_cost_per_wp,
+            "elec_price":     electricity_price,
+            "escalation":     price_escalation_pct / 100.0,
+            "discount":       discount_rate_pct / 100.0,
+            "degradation":    cfg["degradation_rate"],   # shared with Loss Budget slider
+            "lifetime_yr":    project_lifetime_yr,
+            "feed_in_frac":   feed_in_fraction / 100.0,
+            "feed_in_tariff": feed_in_tariff,
+        }
+
+    # -----------------------------------------------------------------------
+    # 7. Orientation sweep settings
     # -----------------------------------------------------------------------
     with st.sidebar.expander("🔍 Optimizer Settings", expanded=False):
         st.caption(

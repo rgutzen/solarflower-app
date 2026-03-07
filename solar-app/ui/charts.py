@@ -13,10 +13,21 @@ import pvlib
 
 MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-SUN_COLOR  = "#F5A623"
-BLUE_COLOR = "#2D7DD2"
-GREY_COLOR = "#AAAAAA"
-RED_COLOR  = "#E63946"
+
+# Brand colors (Phase 1)
+SUN_COLOR    = "#F5A623"  # Amber - primary
+BLUE_COLOR   = "#2D7DD2"  # Sky blue - secondary
+GREY_COLOR   = "#AAAAAA"   # Neutral
+RED_COLOR    = "#E63946"   # Semantic danger
+
+# Extended palette: Earth & Dusk (Phase 1)
+TERRACOTTA   = "#C75B39"  # Earth, clay, groundedness
+OCHRE        = "#D4A03A"  # Golden earth, complementary accent
+CLAY         = "#A67B5B"  # Ground, roots
+DUSK         = "#6B5B95"  # Twilight, transition
+DAWN         = "#E8B4B8"  # Morning, renewal
+MIDNIGHT     = "#2D2D44"  # Night, rest
+GREEN_COLOR  = "#4CAF50"  # Growth, nature
 
 
 # ---------------------------------------------------------------------------
@@ -25,6 +36,8 @@ RED_COLOR  = "#E63946"
 
 _WATERFALL_LABELS = {
     "Horizon & far shading": "Orientation losses",
+    "Transposition": "Orientation losses",
+    "Near shading":  "Near shading (horizon)",
     "IAM (angle of incidence)": "Glass reflections",
     "Temperature derating": "Heat derating",
     "Soiling": "Soiling (dust & dirt)",
@@ -36,6 +49,7 @@ _WATERFALL_LABELS = {
     "AC wiring": "AC cable losses",
     "Transformer": "Transformer",
 }
+GREEN_COLOR = "#28C840"
 
 
 def loss_waterfall(waterfall: dict[str, float], net_kwh: float) -> go.Figure:
@@ -376,3 +390,203 @@ def _doy_to_mmdd(doy: int) -> str:
     import datetime
     d = datetime.date(2023, 1, 1) + datetime.timedelta(days=doy - 1)
     return d.strftime("%m-%d")
+
+
+# ---------------------------------------------------------------------------
+# Plan 05: Lifetime Yield Projection
+# ---------------------------------------------------------------------------
+
+def lifetime_yield_chart(lifetime_yield: np.ndarray) -> go.Figure:
+    """Bar chart of annual yield decay + cumulative yield on secondary axis."""
+    years      = list(range(1, len(lifetime_yield) + 1))
+    cumulative = np.cumsum(lifetime_yield) / 1000.0   # MWh
+
+    fig = go.Figure()
+    fig.add_bar(
+        x=years, y=lifetime_yield,
+        name="Annual yield (kWh)",
+        marker_color=[SUN_COLOR if y == 1 else BLUE_COLOR for y in years],
+        opacity=0.85,
+    )
+    fig.add_scatter(
+        x=years, y=cumulative,
+        name="Cumulative yield (MWh)",
+        yaxis="y2",
+        line=dict(color=GREEN_COLOR, width=2.5),
+        mode="lines",
+    )
+    # Typical 80% warranty threshold
+    y1 = lifetime_yield[0]
+    fig.add_hline(
+        y=y1 * 0.80, line_dash="dot", line_color="rgba(255,165,0,0.5)",
+        annotation_text="80% yr-1 (typical warranty)",
+        annotation_position="top left",
+    )
+    fig.update_layout(
+        title="Annual Yield Over Project Lifetime",
+        xaxis_title="Year",
+        yaxis_title="Annual yield (kWh)",
+        yaxis2=dict(
+            title="Cumulative yield (MWh)",
+            overlaying="y", side="right",
+            showgrid=False,
+        ),
+        template="plotly_dark",
+        height=350,
+        margin=dict(l=60, r=80, t=50, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    )
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Plan 02: Economic Analysis Charts
+# ---------------------------------------------------------------------------
+
+def cashflow_chart(econ) -> go.Figure:
+    """
+    Annual savings bars + cumulative cash-flow line.
+    Green = profit region, amber = payback period.
+    """
+    years = list(range(1, len(econ.annual_savings_arr) + 1))
+
+    fig = go.Figure()
+    fig.add_bar(
+        x=years, y=econ.annual_savings_arr,
+        name="Annual savings (€)",
+        marker_color=SUN_COLOR, opacity=0.8,
+    )
+    fig.add_scatter(
+        x=years, y=econ.cumulative_cf_arr,
+        name="Cumulative cash flow (€)",
+        line=dict(color=BLUE_COLOR, width=2.5),
+        mode="lines+markers",
+        marker=dict(size=4),
+    )
+    fig.add_hline(y=0, line_dash="dash", line_color="rgba(255,255,255,0.3)")
+    fig.update_layout(
+        title="Cash Flow Over Project Lifetime",
+        xaxis_title="Year",
+        yaxis_title="€",
+        template="plotly_dark",
+        height=350,
+        margin=dict(l=60, r=20, t=50, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    )
+    return fig
+
+
+def yield_degradation_chart(econ) -> go.Figure:
+    """Line chart showing annual yield decay over project lifetime."""
+    years = list(range(1, len(econ.annual_yield_arr) + 1))
+    y1    = econ.annual_yield_arr[0]
+
+    fig = go.Figure()
+    fig.add_scatter(
+        x=years, y=econ.annual_yield_arr,
+        name="Annual yield (kWh)",
+        line=dict(color=SUN_COLOR, width=2),
+        fill="tozeroy", fillcolor="rgba(245,166,35,0.15)",
+    )
+    fig.add_hline(
+        y=y1 * 0.80, line_dash="dot", line_color="rgba(255,165,0,0.5)",
+        annotation_text="80% yr-1", annotation_position="top left",
+    )
+    fig.update_layout(
+        title="Annual Yield Degradation",
+        xaxis_title="Year",
+        yaxis_title="Annual yield (kWh)",
+        template="plotly_dark",
+        height=280,
+        margin=dict(l=60, r=20, t=50, b=40),
+        showlegend=False,
+    )
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Plan 04: Horizon Profile Chart (shown in Sun Path tab)
+# ---------------------------------------------------------------------------
+
+def horizon_profile_chart(
+    lat: float, lon: float, elevation_m: float,
+    horizon_azimuths: tuple[float, ...],
+    horizon_elevations: tuple[float, ...],
+) -> go.Figure:
+    """
+    Polar chart: user horizon profile (shaded region) overlaid on the annual
+    sun path for winter solstice, equinox, and summer solstice.
+    """
+    import datetime
+
+    loc = pvlib.location.Location(lat, lon, altitude=elevation_m, tz="UTC")
+
+    # --- Horizon profile: close the loop at 360° ---
+    hz_az = list(horizon_azimuths) + [horizon_azimuths[0] + 360]
+    hz_el = list(horizon_elevations) + [horizon_elevations[0]]
+    # Interpolate to full 1° resolution for smooth shading
+    az_full = np.arange(0, 361)
+    el_full = np.interp(az_full, hz_az, hz_el)
+    # Polar r: convert elevation to zenith distance (90° = horizon in polar)
+    r_hz = 90 - el_full
+
+    fig = go.Figure()
+
+    # Shaded horizon obstruction zone
+    fig.add_trace(go.Scatterpolar(
+        r=np.concatenate([r_hz, [90, 90, r_hz[0]]]),
+        theta=np.concatenate([az_full, [az_full[-1], az_full[0], az_full[0]]]),
+        fill="toself",
+        fillcolor="rgba(150,150,150,0.25)",
+        line=dict(color=GREY_COLOR, width=2),
+        name="Horizon profile",
+        mode="lines",
+    ))
+
+    # Sun paths for special days
+    special_days = [
+        ("Winter solstice (Dec 21)", 355, BLUE_COLOR, "solid"),
+        ("Equinox (Mar 20)",          79, GREY_COLOR, "dot"),
+        ("Summer solstice (Jun 21)",  172, SUN_COLOR,  "solid"),
+    ]
+    for label, doy, color, dash in special_days:
+        date = datetime.date(2023, 1, 1) + datetime.timedelta(days=doy - 1)
+        times = pd.date_range(
+            datetime.datetime(2023, date.month, date.day, 0, 0),
+            periods=145, freq="10min", tz="UTC",
+        )
+        sp  = loc.get_solarposition(times)
+        alt = (90 - sp["apparent_zenith"].clip(upper=90)).clip(lower=0)
+        az  = sp["azimuth"]
+        mask = alt > 0
+        if mask.sum() < 2:
+            continue
+        r     = 90 - alt[mask]
+        theta = az[mask]
+        fig.add_trace(go.Scatterpolar(
+            r=r, theta=theta, mode="lines",
+            name=label, line=dict(color=color, width=2, dash=dash),
+        ))
+
+    fig.update_layout(
+        title="Horizon Profile & Sun Path — shaded area = obstruction zone",
+        polar=dict(
+            angularaxis=dict(
+                tickmode="array",
+                tickvals=[0, 45, 90, 135, 180, 225, 270, 315],
+                ticktext=["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                direction="clockwise",
+                rotation=90,
+            ),
+            radialaxis=dict(
+                tickmode="array",
+                tickvals=[0, 15, 30, 45, 60, 75, 90],
+                ticktext=["90°", "75°", "60°", "45°", "30°", "15°", "0°"],
+                range=[0, 90],
+            ),
+        ),
+        height=450,
+        margin=dict(l=40, r=40, t=60, b=40),
+        legend=dict(orientation="h", y=-0.12),
+    )
+    return fig

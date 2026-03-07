@@ -31,6 +31,25 @@
   --grey:        #5C6F7A;
   --grey-light:  #F5F6F5;
 
+  /* Extended: Earth & Dusk (Phase 1) */
+  --terracotta:      #C75B39;
+  --terracotta-light:#E8A08A;
+  --terracotta-dark: #8B3D26;
+  --ochre:           #D4A03A;
+  --ochre-light:     #F0D090;
+  --ochre-dark:      #9A7128;
+  --clay:            #A67B5B;
+  --clay-light:      #C9A68A;
+  --clay-dark:       #6B5240;
+  --dusk:            #6B5B95;
+  --dusk-light:      #9B8BB5;
+  --dusk-dark:       #4A3D6A;
+  --dawn:            #E8B4B8;
+  --dawn-light:      #F5D5D8;
+  --dawn-dark:       #C48A8E;
+  --midnight:        #2D2D44;
+  --midnight-light:  #4A4A66;
+
   /* Neutrals */
   --ink:         #1B2E1B;
   --ink-light:   #3D5240;
@@ -63,11 +82,23 @@
   --shadow-card: 0 2px 16px rgba(27, 46, 27, 0.05), 0 0 0 1px rgba(76, 175, 80, 0.04);
   --shadow-card-hover: 0 12px 36px rgba(27, 46, 27, 0.10), 0 0 0 1px rgba(76, 175, 80, 0.08);
 
-  /* Radii */
+  /* Radii (geometric) */
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+
+  /* Radii (organic - Phase 3) */
+  --radius-blob: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --radius-leaf: 20px 0px 20px 0px;
+  --radius-seed: 50% 50% 50% 50% / 60% 40% 60% 40%;
+  --radius-pebble: 65% 35% 55% 45% / 45% 55% 65% 35%;
+  --radius-pot: 30px 70px 40px 60px / 60px 40px 70px 30px;
+
+  /* Textures (Phase 2) */
+  --texture-paper: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23ffffff' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E");
+  --texture-canvas: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0zM20 20h20v20H20z' fill='%23000' fill-opacity='0.015' fill-rule='evenodd'/%3E%3C/svg%3E");
+  --texture-fiber: url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence baseFrequency='0.05' numOctaves='2' type='fractalNoise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.025'/%3E%3C/svg%3E");
 
   /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -181,7 +212,12 @@ ul[role="list"] { list-style: none; }
 .hero {
   position: relative;
   padding: calc(64px + var(--sp-16)) 0 var(--sp-24);
-  background: linear-gradient(170deg, var(--bg-warm) 0%, #F6F9E8 35%, #E8F5E9 65%, #E3F0E8 100%);
+  background: linear-gradient(170deg, 
+    var(--dawn-light) 0%, 
+    var(--bg-warm) 30%, 
+    var(--green-pale) 65%, 
+    var(--sage) 100%
+  );
   overflow: hidden;
 }
 
@@ -579,11 +615,15 @@ ul[role="list"] { list-style: none; }
 }
 
 /* ===================================================================
-   OPEN SOURCE SECTION
+   OPEN SOURCE SECTION (Phase 1: Earth tones)
    =================================================================== */
 .open-source {
   padding: var(--sp-16) 0 var(--sp-20);
-  background: linear-gradient(180deg, var(--green-pale) 0%, var(--green-light) 100%);
+  background: linear-gradient(180deg, 
+    var(--clay-light) 0%, 
+    var(--green-pale) 50%, 
+    var(--green-light) 100%
+  );
   position: relative;
 }
 
@@ -594,7 +634,7 @@ ul[role="list"] { list-style: none; }
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--sage) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--terracotta) 50%, transparent 100%);
   opacity: 0.3;
 }
 
@@ -703,6 +743,57 @@ ul[role="list"] { list-style: none; }
 .cards [data-reveal]:nth-child(3) { transition-delay: 0.24s; }
 
 /* ===================================================================
+   BIOPHILIC ANIMATIONS (Phase 4)
+   =================================================================== */
+
+/* Bloom reveal — cards bloom open like a flower */
+@keyframes bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+    filter: blur(4px);
+  }
+  60% {
+    transform: scale(1.03) translateY(-3px);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+[data-reveal].revealed.bloom {
+  animation: bloom 0.7s var(--ease) forwards;
+}
+
+/* Breathing button — gentle pulse like a sleeping plant */
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(245, 166, 35, 0.12); }
+}
+
+.btn--primary:not(:hover):not(:focus-visible) {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Gentle float for decorative blobs */
+@keyframes float-gentle {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(8px, -6px) rotate(1deg); }
+  66% { transform: translate(-6px, 4px) rotate(-1deg); }
+}
+
+.hero__blob--1 { animation: float-gentle 18s ease-in-out infinite; }
+.hero__blob--2 { animation: float-gentle 22s ease-in-out infinite reverse; }
+
+/* Root-like growth for progress elements */
+@keyframes grow-root {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ===================================================================
    FOCUS STYLES (accessibility)
    =================================================================== */
 :focus-visible {
@@ -734,7 +825,6 @@ ul[role="list"] { list-style: none; }
     max-width: 520px;
   }
   .hero__illustration {
-    order: -1;
     margin-bottom: var(--sp-4);
   }
   .hero__illustration img,
