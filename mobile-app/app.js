@@ -38,6 +38,7 @@ const state = {
   optimalYield: null,      // kWh/kWp at optimal orientation
   currentHeading: null,    // from compass sensor (= panel azimuth)
   currentTilt: null,       // from accelerometer (= panel tilt)
+  currentAccuracy: null,   // compass accuracy in degrees (iOS only, null = unknown)
   currentYield: null,      // kWh/kWp at current sensor orientation
   currentPct: null,        // percentage of optimal yield
   sensorsActive: false,
@@ -215,10 +216,42 @@ function bindEvents() {
 }
 
 // ===========================================================================
+// URL Deep-link
+// ===========================================================================
+
+/**
+ * Parse lat/lon from URL query string for deep-link pre-fill.
+ * URL format: ?lat=52.5&lon=13.4
+ *
+ * @returns {{ lat: number, lon: number }|null}
+ */
+function readURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  const lat = parseFloat(params.get('lat'));
+  const lon = parseFloat(params.get('lon'));
+  if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+    return { lat, lon };
+  }
+  return null;
+}
+
+// ===========================================================================
 // Geolocation
 // ===========================================================================
 
 function requestGeolocation() {
+  // Check URL deep-link params first (share a location by URL)
+  const urlParams = readURLParams();
+  if (urlParams) {
+    dom.locationText.textContent = 'Loading location…';
+    showSpinner(true);
+    reverseGeocode(urlParams.lat, urlParams.lon).then(name => {
+      showSpinner(false);
+      setLocation(urlParams.lat, urlParams.lon, name);
+    });
+    return;
+  }
+
   if (!('geolocation' in navigator)) {
     showManualEntry('Geolocation not available');
     return;
@@ -420,9 +453,10 @@ function showNoSensorFallback() {
 
 let _rafId = null;
 
-function onSensorUpdate({ heading, tilt }) {
+function onSensorUpdate({ heading, tilt, accuracy }) {
   state.currentHeading = heading;
   state.currentTilt = tilt;
+  state.currentAccuracy = accuracy;
 
   // Throttle DOM updates to animation frames
   if (_rafId) return;
@@ -452,6 +486,7 @@ function updateUI() {
   // -----------------------------------------------------------------------
   // 2. Update Compass
   // -----------------------------------------------------------------------
+  updateAccuracyIndicator(state.currentAccuracy);
   dom.compassNeedle.setAttribute('transform', `rotate(${currentHeading} 150 150)`);
   dom.headingValue.textContent = Math.round(currentHeading);
   dom.headingCardinal.textContent = azimuthToCardinal(currentHeading);
@@ -772,6 +807,30 @@ function positionTiltTarget(tiltDeg) {
   const x = TILT_CX + TILT_R * Math.cos(rad);
   const y = TILT_CY - TILT_R * Math.sin(rad);
   dom.tiltTarget.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+}
+
+// ===========================================================================
+// Compass Accuracy Indicator (iOS only — webkitCompassAccuracy)
+// ===========================================================================
+
+/**
+ * Show a calibration warning when compass accuracy is poor.
+ * Only relevant on iOS — Android doesn't expose accuracy via DeviceOrientation.
+ *
+ * @param {number|null} accuracy — degrees of accuracy (lower is better), or null
+ */
+function updateAccuracyIndicator(accuracy) {
+  const el = $('compass-accuracy');
+  const text = $('compass-accuracy-text');
+  if (!el || !text) return;
+
+  // Show warning when accuracy is reported and exceeds 20° (poor)
+  if (accuracy !== null && accuracy > 20) {
+    el.hidden = false;
+    text.textContent = `Low compass accuracy (±${Math.round(accuracy)}°) — wave phone in a figure-8 to calibrate`;
+  } else {
+    el.hidden = true;
+  }
 }
 
 /**

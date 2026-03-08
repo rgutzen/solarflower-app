@@ -20,14 +20,35 @@
   const AU    = 1.496e11;   // 1 Astronomical Unit [m]
   const S0    = 1361.0;     // Solar constant [W/m²]
 
-  // Colors matching the solarpunk design
-  const SUN_COLOR   = "#F5A623";
-  const SKY_COLOR   = "#4A90D9";
-  const EARTH_COLOR = "#27AE60";
-  const PANEL_COLOR = "#2ECC71";
-  const INK_COLOR   = "#1B2E1B";
-  const INK_LIGHT   = "#3D5240";
-  const GREY_COLOR  = "#5C6F7A";
+  // Colors matching the solarpunk / organic design system
+  const SUN_COLOR       = "#E8920E";   // amber-dark — warm, earthy amber
+  const AMBER_LIGHT_C   = "#F5C36A";   // softer amber for fills
+  const SKY_COLOR       = "#4A85C0";   // muted blue
+  const EARTH_COLOR     = "#4A7A58";   // sage green (ink-light)
+  const TERRACOTTA      = "#C75B39";   // warm red-orange
+  const WINTER_COLOR    = "#5B8DC4";   // muted blue for winter
+  const SPRING_COLOR    = "#6BB87A";   // spring green
+  const INK_COLOR       = "#2D3B2D";   // softer dark green
+  const INK_LIGHT       = "#4A6050";   // warm ink-light
+  const GREY_COLOR      = "#6A7F72";   // warm grey
+
+  // Organic heatmap colorscale (pale green → amber → terracotta)
+  const ORGANIC_COLORSCALE = [
+    [0.0,  "#E8F5E9"],
+    [0.25, "#C8E6C9"],
+    [0.5,  "#FFF3DC"],
+    [0.75, "#F5A623"],
+    [1.0,  "#C75B39"],
+  ];
+
+  // Seasonal bar colors (Jan–Dec)
+  const SEASONAL_COLORS = [
+    WINTER_COLOR, WINTER_COLOR,                    // Jan, Feb
+    SPRING_COLOR, SPRING_COLOR, SPRING_COLOR,      // Mar, Apr, May
+    SUN_COLOR,    SUN_COLOR,   SUN_COLOR,          // Jun, Jul, Aug
+    TERRACOTTA,   TERRACOTTA,                       // Sep, Oct
+    WINTER_COLOR, WINTER_COLOR,                    // Nov, Dec
+  ];
 
   const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun",
                         "Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -42,11 +63,16 @@
   };
 
   const LAYOUT_BASE = {
-    font: { family: '"Inter", "Segoe UI", system-ui, sans-serif', color: INK_LIGHT },
+    font: { family: '"Lora", "Georgia", serif', size: 15, color: INK_LIGHT },
+    title: { font: { family: '"Lora", "Georgia", serif', size: 17, color: INK_COLOR } },
     paper_bgcolor: "rgba(0,0,0,0)",
-    plot_bgcolor: "rgba(0,0,0,0)",
-    margin: { t: 50, r: 30, b: 50, l: 60 },
-    hoverlabel: { bgcolor: "#fff", bordercolor: "#ccc", font: { size: 12 } },
+    plot_bgcolor:  "rgba(0,0,0,0)",
+    margin: { t: 55, r: 30, b: 80, l: 65 },
+    hoverlabel: {
+      bgcolor: "#FEFDF5",
+      bordercolor: "rgba(76,175,80,0.2)",
+      font: { family: '"Inter", sans-serif', size: 13, color: INK_COLOR },
+    },
   };
 
   // =====================================================================
@@ -266,7 +292,9 @@
       y: irrad,
       mode: "lines",
       name: "I = L☉ / (4π d²)",
-      line: { color: SUN_COLOR, width: 3 },
+      line: { color: SUN_COLOR, width: 2.5 },
+      fill: "tozeroy",
+      fillcolor: "rgba(232, 146, 14, 0.07)",
       hovertemplate: "Distance: %{x:.2f} AU<br>Irradiance: %{y:.0f} W/m²<extra></extra>",
     }];
 
@@ -279,18 +307,18 @@
         marker: { color: p.color, size: 12, line: { width: 1, color: "#fff" } },
         text: [p.name],
         textposition: "top right",
-        textfont: { color: p.color, size: 12 },
+        textfont: { color: p.color, size: 13 },
         hovertemplate: `${p.name}<br>${p.dist} AU<br>${I.toFixed(0)} W/m²<extra></extra>`,
       });
     }
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: "Inverse-Square Law: Irradiance vs Distance from the Sun", font: { size: 14 } },
-      xaxis: { title: "Distance from the Sun [AU]", range: [0.3, 2.2], gridcolor: "rgba(0,0,0,0.06)" },
-      yaxis: { title: "Irradiance [W/m²]", gridcolor: "rgba(0,0,0,0.06)" },
+      title: { text: "<b>Inverse-Square Law: Irradiance vs Distance from the Sun</b>", font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+      xaxis: { title: "Distance from the Sun [AU]", range: [0.3, 2.2], gridcolor: "rgba(74,96,80,0.1)", zerolinecolor: "rgba(74,96,80,0.15)" },
+      yaxis: { title: "Irradiance [W/m²]", gridcolor: "rgba(74,96,80,0.1)", zerolinecolor: "rgba(74,96,80,0.15)" },
       showlegend: true,
-      legend: { x: 0.55, y: 0.95, bgcolor: "rgba(255,255,255,0.85)", bordercolor: "rgba(0,0,0,0.1)", borderwidth: 1 },
+      legend: { x: 0.55, y: 0.95, bgcolor: "rgba(254,253,245,0.9)", bordercolor: "rgba(76,175,80,0.15)", borderwidth: 1 },
     }, PLOTLY_CONFIG);
   }
 
@@ -331,7 +359,7 @@
       marker: { color: "crimson", size: 10 },
       text: ["Perihelion (Jan)"],
       textposition: "top right",
-      textfont: { color: "crimson", size: 11 },
+      textfont: { color: "crimson", size: 13 },
       hovertemplate: `Perihelion<br>Day ${doy[maxI]}<br>${maxG.toFixed(1)} W/m²<extra></extra>`,
     }, {
       x: [doy[minI]], y: [minG],
@@ -340,23 +368,17 @@
       marker: { color: "steelblue", size: 10 },
       text: ["Aphelion (Jul)"],
       textposition: "bottom left",
-      textfont: { color: "steelblue", size: 11 },
+      textfont: { color: "steelblue", size: 13 },
       hovertemplate: `Aphelion<br>Day ${doy[minI]}<br>${minG.toFixed(1)} W/m²<extra></extra>`,
     }];
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: "Extraterrestrial Irradiance Over the Year", font: { size: 14 } },
-      xaxis: {
-        title: "Day of Year",
-        tickvals: MONTH_DAYS,
-        ticktext: MONTH_LABELS,
-        range: [1, 365],
-        gridcolor: "rgba(0,0,0,0.06)",
-      },
-      yaxis: { title: "ETR [W/m²]", range: [1300, 1420], gridcolor: "rgba(0,0,0,0.06)" },
+      title: { text: "<b>Extraterrestrial Irradiance Over the Year</b>", font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+      xaxis: { title: "Day of Year", tickvals: MONTH_DAYS, ticktext: MONTH_LABELS, range: [1, 365], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis: { title: "ETR [W/m²]", range: [1300, 1420], gridcolor: "rgba(74,96,80,0.1)" },
       showlegend: true,
-      legend: { x: 0.35, y: 1.02, orientation: "h", bgcolor: "rgba(255,255,255,0.85)" },
+      legend: { x: 0.35, y: 1.02, orientation: "h", bgcolor: "rgba(254,253,245,0.9)" },
     }, PLOTLY_CONFIG);
   }
 
@@ -388,10 +410,10 @@
 
     // Key dates
     const keyDates = [
-      { doy: 80, label: "Spring equinox", color: "green" },
-      { doy: 172, label: "Summer solstice", color: "crimson" },
-      { doy: 265, label: "Autumn equinox", color: "green" },
-      { doy: 355, label: "Winter solstice", color: "steelblue" },
+      { doy: 80,  label: "Spring equinox",  color: EARTH_COLOR },
+      { doy: 172, label: "Summer solstice", color: SUN_COLOR },
+      { doy: 265, label: "Autumn equinox",  color: TERRACOTTA },
+      { doy: 355, label: "Winter solstice", color: WINTER_COLOR },
     ];
 
     const shapes = keyDates.map(d => ({
@@ -401,22 +423,16 @@
 
     const annotations = keyDates.map(d => ({
       x: d.doy, y: -28, text: d.label,
-      showarrow: false, font: { color: d.color, size: 10 },
+      showarrow: false, font: { color: d.color, size: 12 },
     }));
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: "Solar Declination Over the Year", font: { size: 14 } },
-      xaxis: {
-        title: "Day of Year",
-        tickvals: MONTH_DAYS,
-        ticktext: MONTH_LABELS,
-        range: [1, 365],
-        gridcolor: "rgba(0,0,0,0.06)",
-      },
-      yaxis: { title: "Declination δ [°]", range: [-32, 32], gridcolor: "rgba(0,0,0,0.06)" },
+      title: { text: "<b>Solar Declination Over the Year</b>", font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+      xaxis: { title: "Day of Year", tickvals: MONTH_DAYS, ticktext: MONTH_LABELS, range: [1, 365], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis: { title: "Declination δ [°]", range: [-32, 32], gridcolor: "rgba(74,96,80,0.1)" },
       showlegend: true,
-      legend: { x: 0.5, y: 1.02, orientation: "h", bgcolor: "rgba(255,255,255,0.85)" },
+      legend: { x: 0.5, y: 1.02, orientation: "h", bgcolor: "rgba(254,253,245,0.9)" },
       shapes,
       annotations,
     }, PLOTLY_CONFIG);
@@ -431,9 +447,9 @@
     ];
 
     const seasons = [
-      { doy: 172, label: "Summer solstice (Jun 21)", color: "crimson", dash: "solid" },
-      { doy: 80,  label: "Equinox (Mar 20)",         color: "green",   dash: "dash" },
-      { doy: 355, label: "Winter solstice (Dec 21)", color: "steelblue", dash: "dot" },
+      { doy: 172, label: "Summer solstice (Jun 21)", color: SUN_COLOR,    dash: "solid" },
+      { doy: 80,  label: "Equinox (Mar 20)",         color: EARTH_COLOR,  dash: "dash" },
+      { doy: 355, label: "Winter solstice (Dec 21)", color: WINTER_COLOR, dash: "dot" },
     ];
 
     const hours = linspace(0, 24, 1440);
@@ -471,24 +487,27 @@
 
       Plotly.newPlot(el, traces, {
         ...LAYOUT_BASE,
-        title: { text: cfg.name, font: { size: 13 } },
-        margin: { t: 50, r: 40, b: 30, l: 40 },
+        title: { text: `<b>${cfg.name}</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+        margin: { t: 55, r: 40, b: 50, l: 40 },
         polar: {
+          bgcolor: "rgba(232,245,233,0.25)",
           angularaxis: {
             direction: "clockwise",
             rotation: 90,
             tickvals: [0, 90, 180, 270],
             ticktext: ["N", "E", "S", "W"],
+            gridcolor: "rgba(74,96,80,0.12)",
           },
           radialaxis: {
             range: [0, 90],
             tickvals: [10, 30, 60, 90],
             ticktext: ["80°", "60°", "30°", "0°"],
             showline: false,
+            gridcolor: "rgba(74,96,80,0.1)",
           },
         },
         showlegend: cfg.lat === 0,
-        legend: { x: 0.0, y: -0.25, orientation: "h", font: { size: 10 } },
+        legend: { x: 0.0, y: -0.32, orientation: "h", font: { size: 12 }, bgcolor: "rgba(254,253,245,0.9)" },
       }, PLOTLY_CONFIG);
     }
   }
@@ -556,15 +575,15 @@
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: "Atmospheric Effects on Solar Irradiance", font: { size: 14 } },
+      title: { text: "<b>Atmospheric Effects on Solar Irradiance</b>", font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
       grid: { rows: 1, columns: 2, pattern: "independent" },
-      xaxis:  { title: "Air Mass AM", range: [0, 12], domain: [0, 0.45], gridcolor: "rgba(0,0,0,0.06)" },
-      yaxis:  { title: "Solar altitude α [°]", range: [1, 90], gridcolor: "rgba(0,0,0,0.06)" },
-      xaxis2: { title: "Irradiance [W/m²]", range: [0, 1420], domain: [0.55, 1], gridcolor: "rgba(0,0,0,0.06)" },
-      yaxis2: { title: "Solar altitude α [°]", range: [1, 90], gridcolor: "rgba(0,0,0,0.06)" },
+      xaxis:  { title: "Air Mass AM", range: [0, 12], domain: [0, 0.45], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis:  { title: "Solar altitude α [°]", range: [1, 90], gridcolor: "rgba(74,96,80,0.1)" },
+      xaxis2: { title: "Irradiance [W/m²]", range: [0, 1420], domain: [0.55, 1], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis2: { title: "Solar altitude α [°]", range: [1, 90], gridcolor: "rgba(74,96,80,0.1)" },
       showlegend: true,
-      legend: { x: 0.0, y: 1.15, orientation: "h", font: { size: 10 }, bgcolor: "rgba(255,255,255,0.85)" },
-      margin: { t: 70, r: 30, b: 50, l: 60 },
+      legend: { x: 0.0, y: 1.15, orientation: "h", font: { size: 12 }, bgcolor: "rgba(254,253,245,0.9)" },
+      margin: { t: 75, r: 30, b: 80, l: 65 },
     }, PLOTLY_CONFIG);
   }
 
@@ -579,10 +598,10 @@
 
     const orientations = [
       { tilt: 0,  az: 180, color: GREY_COLOR,    name: "Horizontal (β=0°)", dash: "solid" },
-      { tilt: 30, az: 180, color: "crimson",      name: "30° tilt, South",   dash: "solid" },
-      { tilt: 30, az: 90,  color: "steelblue",    name: "30° tilt, East",    dash: "dash" },
-      { tilt: 30, az: 270, color: "orange",        name: "30° tilt, West",    dash: "dashdot" },
-      { tilt: 90, az: 180, color: EARTH_COLOR,     name: "Vertical, South",   dash: "dot" },
+      { tilt: 30, az: 180, color: TERRACOTTA,    name: "30° tilt, South",   dash: "solid" },
+      { tilt: 30, az: 90,  color: WINTER_COLOR,  name: "30° tilt, East",    dash: "dash" },
+      { tilt: 30, az: 270, color: SUN_COLOR,      name: "30° tilt, West",    dash: "dashdot" },
+      { tilt: 90, az: 180, color: EARTH_COLOR,    name: "Vertical, South",   dash: "dot" },
     ];
 
     const traces = [];
@@ -607,11 +626,11 @@
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: "Panel Irradiance Over a Day (Munich, June 21)", font: { size: 14 } },
-      xaxis: { title: "Hour (UTC)", range: [4, 20], gridcolor: "rgba(0,0,0,0.06)" },
-      yaxis: { title: "In-plane irradiance G_T [W/m²]", gridcolor: "rgba(0,0,0,0.06)" },
+      title: { text: "<b>Panel Irradiance Over a Day (Munich, June 21)</b>", font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+      xaxis: { title: "Hour (UTC)", range: [4, 20], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis: { title: "In-plane irradiance G_T [W/m²]", gridcolor: "rgba(74,96,80,0.1)" },
       showlegend: true,
-      legend: { x: 0.02, y: 0.98, bgcolor: "rgba(255,255,255,0.85)", bordercolor: "rgba(0,0,0,0.1)", borderwidth: 1 },
+      legend: { x: 0.02, y: 0.98, bgcolor: "rgba(254,253,245,0.9)", bordercolor: "rgba(76,175,80,0.15)", borderwidth: 1 },
     }, PLOTLY_CONFIG);
   }
 
@@ -655,34 +674,34 @@
       x: hArr, y: pFixed,
       mode: "lines",
       name: `Fixed η = ${ETA_STC*100}%`,
-      line: { color: SUN_COLOR, width: 3 },
+      line: { color: SUN_COLOR, width: 2.5 },
       fill: "tozeroy",
-      fillcolor: "rgba(245, 166, 35, 0.1)",
+      fillcolor: "rgba(232, 146, 14, 0.12)",
       hovertemplate: "%{y:.2f} kW at %{x:.1f}h<extra>Fixed η</extra>",
     }, {
       x: hArr, y: pTemp,
       mode: "lines",
       name: `With T correction (γ = ${GAMMA_T}/°C)`,
-      line: { color: "tomato", width: 2, dash: "dash" },
+      line: { color: TERRACOTTA, width: 2, dash: "dash" },
       fill: "tozeroy",
-      fillcolor: "rgba(255, 99, 71, 0.06)",
+      fillcolor: "rgba(199, 91, 57, 0.07)",
       hovertemplate: "%{y:.2f} kW at %{x:.1f}h<extra>With T correction</extra>",
     }];
 
     Plotly.newPlot(el, traces, {
       ...LAYOUT_BASE,
-      title: { text: `Daily Power Output — Munich, Jun 21 (${AREA} m², ${ETA_STC*100}% eff., ${tiltDemo}° S)`, font: { size: 14 } },
-      xaxis: { title: "Hour (UTC)", range: [3, 21], gridcolor: "rgba(0,0,0,0.06)" },
-      yaxis: { title: "Power [kW]", gridcolor: "rgba(0,0,0,0.06)" },
+      title: { text: `<b>Daily Power Output — Munich, Jun 21 (${AREA} m², ${ETA_STC*100}% eff., ${tiltDemo}° S)</b>`, font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+      xaxis: { title: "Hour (UTC)", range: [3, 21], gridcolor: "rgba(74,96,80,0.1)" },
+      yaxis: { title: "Power [kW]", gridcolor: "rgba(74,96,80,0.1)" },
       showlegend: true,
-      legend: { x: 0.02, y: 0.98, bgcolor: "rgba(255,255,255,0.85)" },
+      legend: { x: 0.02, y: 0.98, bgcolor: "rgba(254,253,245,0.9)" },
       annotations: [{
         x: 12, y: Math.max(...pFixed) * 0.65,
         text: `Daily yield:<br>Fixed η: ${eFixed.toFixed(2)} kWh<br>With T corr.: ${eTemp.toFixed(2)} kWh`,
         showarrow: false,
-        font: { size: 11 },
-        bgcolor: "rgba(255,255,255,0.9)",
-        bordercolor: "rgba(0,0,0,0.1)",
+        font: { family: '"Inter", sans-serif', size: 13, color: INK_LIGHT },
+        bgcolor: "rgba(254,253,245,0.92)",
+        bordercolor: "rgba(76,175,80,0.18)",
         borderwidth: 1,
         borderpad: 6,
       }],
@@ -732,28 +751,23 @@
           x: azArr,
           y: tiltArr,
           type: "heatmap",
-          colorscale: "YlOrRd",
-          colorbar: { title: "Annual yield [kWh]", titleside: "right" },
+          colorscale: ORGANIC_COLORSCALE,
+          colorbar: { title: "Annual yield [kWh]", titleside: "right", tickfont: { family: '"Inter", sans-serif', size: 13 } },
           hovertemplate: "Tilt: %{y}°<br>Azimuth: %{x}°<br>Yield: %{z:.0f} kWh<extra></extra>",
         }, {
           x: [azArr[optJ]], y: [tiltArr[optI]],
           mode: "markers+text",
-          marker: { symbol: "star", size: 18, color: "#fff", line: { color: "#000", width: 1.5 } },
+          marker: { symbol: "star", size: 18, color: "#fff", line: { color: INK_COLOR, width: 1.5 } },
           text: [`Optimum: ${tiltArr[optI]}° tilt, ${azArr[optJ]}° az`],
           textposition: "top right",
-          textfont: { size: 11, color: "#fff" },
+          textfont: { size: 13, color: "#fff" },
           showlegend: false,
           hovertemplate: `Optimum: ${tiltArr[optI]}° tilt, ${azArr[optJ]}° az<br>${maxE.toFixed(0)} kWh<extra></extra>`,
         }], {
           ...LAYOUT_BASE,
-          title: { text: `Annual Yield Heatmap — Munich (48°N, ${areaM2} m², ${eta*100}% eff.)`, font: { size: 14 } },
-          xaxis: {
-            title: "Panel azimuth γ [° from North]",
-            tickvals: [0, 90, 180, 270, 360],
-            ticktext: ["N", "E", "S", "W", "N"],
-            gridcolor: "rgba(0,0,0,0.06)",
-          },
-          yaxis: { title: "Panel tilt β [°]", gridcolor: "rgba(0,0,0,0.06)" },
+          title: { text: `<b>Annual Yield — Munich (48°N, ${areaM2} m², ${eta*100}% eff.)</b>`, font: { family: '"Lora", Georgia, serif', size: 17, color: INK_COLOR } },
+          xaxis: { title: "Panel azimuth γ [° from North]", tickvals: [0, 90, 180, 270, 360], ticktext: ["N", "E", "S", "W", "N"], gridcolor: "rgba(74,96,80,0.08)" },
+          yaxis: { title: "Panel tilt β [°]", gridcolor: "rgba(74,96,80,0.08)" },
         }, PLOTLY_CONFIG);
       }
 
@@ -770,26 +784,27 @@
         Plotly.newPlot(tiltEl, [{
           x: tiltArr, y: southY,
           name: "South (180°)",
-          line: { color: "crimson", width: 3 },
+          line: { color: TERRACOTTA, width: 2.5 },
+          fill: "tozeroy", fillcolor: "rgba(199,91,57,0.08)",
           hovertemplate: "Tilt %{x}°: %{y:.0f} kWh<extra>South</extra>",
         }, {
           x: tiltArr, y: eastY,
           name: "East (90°)",
-          line: { color: "steelblue", width: 2, dash: "dash" },
+          line: { color: WINTER_COLOR, width: 2, dash: "dash" },
           hovertemplate: "Tilt %{x}°: %{y:.0f} kWh<extra>East</extra>",
         }, {
           x: tiltArr, y: westY,
           name: "West (270°)",
-          line: { color: "orange", width: 2, dash: "dashdot" },
+          line: { color: SUN_COLOR, width: 2, dash: "dashdot" },
           hovertemplate: "Tilt %{x}°: %{y:.0f} kWh<extra>West</extra>",
         }], {
           ...LAYOUT_BASE,
-          title: { text: "Yield vs Tilt Angle", font: { size: 13 } },
-          xaxis: { title: "Panel tilt β [°]", gridcolor: "rgba(0,0,0,0.06)" },
-          yaxis: { title: "Annual yield [kWh]", gridcolor: "rgba(0,0,0,0.06)" },
+          title: { text: "<b>Yield vs Tilt Angle</b>", font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          xaxis: { title: "Panel tilt β [°]", gridcolor: "rgba(74,96,80,0.1)" },
+          yaxis: { title: "Annual yield [kWh]", gridcolor: "rgba(74,96,80,0.1)" },
           showlegend: true,
-          legend: { x: 0.55, y: 0.98, bgcolor: "rgba(255,255,255,0.85)" },
-          margin: { t: 50, r: 20, b: 50, l: 60 },
+          legend: { x: 0.55, y: 0.98, bgcolor: "rgba(254,253,245,0.9)" },
+          margin: { t: 55, r: 20, b: 80, l: 65 },
         }, PLOTLY_CONFIG);
       }
 
@@ -807,24 +822,24 @@
           y: avgDailyOpt,
           type: "bar",
           name: `Optimal (${tiltArr[optI]}° tilt)`,
-          marker: { color: SUN_COLOR, opacity: 0.9 },
+          marker: { color: SEASONAL_COLORS, opacity: 0.88 },
           hovertemplate: "%{x}: %{y:.2f} kWh/day<extra>Optimal</extra>",
         }, {
           x: MONTH_LABELS,
           y: avgDailyFlat,
           type: "bar",
           name: "Horizontal",
-          marker: { color: "#ddd", opacity: 0.9, line: { color: GREY_COLOR, width: 1 } },
+          marker: { color: "rgba(106,127,114,0.3)", line: { color: "rgba(106,127,114,0.5)", width: 1 } },
           hovertemplate: "%{x}: %{y:.2f} kWh/day<extra>Horizontal</extra>",
         }], {
           ...LAYOUT_BASE,
-          title: { text: `Monthly Profile — Total: ${totalOpt.toFixed(0)} kWh/yr`, font: { size: 13 } },
-          xaxis: { gridcolor: "rgba(0,0,0,0.06)" },
-          yaxis: { title: "Avg. daily yield [kWh/day]", gridcolor: "rgba(0,0,0,0.06)" },
+          title: { text: `<b>Monthly Profile — Total: ${totalOpt.toFixed(0)} kWh/yr</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          xaxis: { gridcolor: "rgba(74,96,80,0.08)" },
+          yaxis: { title: "Avg. daily yield [kWh/day]", gridcolor: "rgba(74,96,80,0.1)" },
           barmode: "group",
           showlegend: true,
-          legend: { x: 0.02, y: 0.98, bgcolor: "rgba(255,255,255,0.85)" },
-          margin: { t: 50, r: 20, b: 50, l: 60 },
+          legend: { x: 0.02, y: 0.98, bgcolor: "rgba(254,253,245,0.9)" },
+          margin: { t: 55, r: 20, b: 80, l: 65 },
         }, PLOTLY_CONFIG);
       }
     }, 50);
@@ -913,25 +928,20 @@
         Plotly.react(heatmapEl, [{
           z: zData, x: azC, y: tiltC,
           type: "heatmap",
-          colorscale: "YlOrRd",
-          colorbar: { title: "kWh", titleside: "right" },
+          colorscale: ORGANIC_COLORSCALE,
+          colorbar: { title: "kWh", titleside: "right", tickfont: { family: '"Inter", sans-serif', size: 13 } },
           hovertemplate: "Tilt: %{y}°, Az: %{x}° → %{z:.0f} kWh<extra></extra>",
         }, {
           x: [azC[optJ]], y: [tiltC[optI]],
           mode: "markers",
-          marker: { symbol: "star", size: 18, color: "#fff", line: { color: "#000", width: 1.5 } },
+          marker: { symbol: "star", size: 18, color: "#fff", line: { color: INK_COLOR, width: 1.5 } },
           showlegend: false,
           hoverinfo: "skip",
         }], {
           ...LAYOUT_BASE,
-          title: { text: `Annual Yield — lat=${latDeg}°, ${areaM2} m², ${(efficiency*100).toFixed(0)}%`, font: { size: 13 } },
-          xaxis: {
-            title: "Azimuth [° from N]",
-            tickvals: [0, 90, 180, 270, 360],
-            ticktext: ["N", "E", "S", "W", "N"],
-            gridcolor: "rgba(0,0,0,0.06)",
-          },
-          yaxis: { title: "Tilt [°]", gridcolor: "rgba(0,0,0,0.06)" },
+          title: { text: `<b>Annual Yield — lat=${latDeg}°, ${areaM2} m², ${(efficiency*100).toFixed(0)}%</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          xaxis: { title: "Azimuth [° from N]", tickvals: [0, 90, 180, 270, 360], ticktext: ["N", "E", "S", "W", "N"], gridcolor: "rgba(74,96,80,0.08)" },
+          yaxis: { title: "Tilt [°]", gridcolor: "rgba(74,96,80,0.08)" },
         }, PLOTLY_CONFIG);
       }
 
@@ -946,12 +956,13 @@
         Plotly.react(tiltEl, [{
           x: tiltC, y: southY,
           name: "South (180°)",
-          line: { color: "crimson", width: 3 },
+          line: { color: TERRACOTTA, width: 2.5 },
+          fill: "tozeroy", fillcolor: "rgba(199,91,57,0.08)",
           hovertemplate: "%{x}°: %{y:.0f} kWh<extra></extra>",
         }, {
           x: tiltC, y: northY,
           name: "North (0°)",
-          line: { color: "navy", width: 2, dash: "dash" },
+          line: { color: WINTER_COLOR, width: 2, dash: "dash" },
           hovertemplate: "%{x}°: %{y:.0f} kWh<extra></extra>",
         }, {
           x: [0, 90], y: [eFlat, eFlat],
@@ -960,12 +971,12 @@
           hoverinfo: "skip",
         }], {
           ...LAYOUT_BASE,
-          title: { text: `Yield vs Tilt (gain: +${gain.toFixed(1)}%)`, font: { size: 13 } },
-          xaxis: { title: "Tilt β [°]", gridcolor: "rgba(0,0,0,0.06)" },
-          yaxis: { title: "Annual yield [kWh]", gridcolor: "rgba(0,0,0,0.06)" },
+          title: { text: `<b>Yield vs Tilt (gain: +${gain.toFixed(1)}%)</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          xaxis: { title: "Tilt β [°]", gridcolor: "rgba(74,96,80,0.1)" },
+          yaxis: { title: "Annual yield [kWh]", gridcolor: "rgba(74,96,80,0.1)" },
           showlegend: true,
-          legend: { x: 0.5, y: 0.98, bgcolor: "rgba(255,255,255,0.85)", font: { size: 10 } },
-          margin: { t: 50, r: 20, b: 50, l: 60 },
+          legend: { x: 0.5, y: 0.98, bgcolor: "rgba(254,253,245,0.9)", font: { size: 12 } },
+          margin: { t: 55, r: 20, b: 80, l: 65 },
         }, PLOTLY_CONFIG);
       }
 
@@ -980,13 +991,13 @@
           x: MONTH_LABELS,
           y: avgDaily,
           type: "bar",
-          marker: { color: SUN_COLOR, opacity: 0.9 },
+          marker: { color: SEASONAL_COLORS, opacity: 0.88 },
           hovertemplate: "%{x}: %{y:.2f} kWh/day<extra></extra>",
         }], {
           ...LAYOUT_BASE,
-          title: { text: `Monthly Profile — ${total.toFixed(0)} kWh/yr`, font: { size: 13 } },
-          yaxis: { title: "Avg. daily yield [kWh/day]", gridcolor: "rgba(0,0,0,0.06)" },
-          margin: { t: 50, r: 20, b: 50, l: 60 },
+          title: { text: `<b>Monthly Profile — ${total.toFixed(0)} kWh/yr</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          yaxis: { title: "Avg. daily yield [kWh/day]", gridcolor: "rgba(74,96,80,0.1)" },
+          margin: { t: 55, r: 20, b: 80, l: 65 },
         }, PLOTLY_CONFIG);
       }
     }

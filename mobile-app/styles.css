@@ -534,6 +534,22 @@ body.high-contrast .header__contrast-btn {
   min-height: 1.5em;
 }
 
+.compass__accuracy {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.78rem;
+  color: var(--amber-dark);
+  background: var(--amber-light);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-1);
+  max-width: 36ch;
+  text-align: left;
+  line-height: 1.4;
+}
+
 /* --------------------------------------------------------------------------
    9. Tilt Meter
    -------------------------------------------------------------------------- */

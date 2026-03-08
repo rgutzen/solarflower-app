@@ -207,7 +207,7 @@ ul[role="list"] { list-style: none; }
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: -0.01em;
-  color: var(--ink);
+  color: var(--sage);
 }
 
 .nav__logo {
@@ -850,7 +850,7 @@ ul[role="list"] { list-style: none; }
 .footer {
   padding: var(--sp-8) 0;
   border-top: 1px solid rgba(76, 175, 80, 0.1);
-  background: var(--bg);
+  background: var(--green-light);
 }
 
 .footer__inner {
@@ -867,7 +867,7 @@ ul[role="list"] { list-style: none; }
   gap: var(--sp-2);
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--ink);
+  color: var(--sage);
 }
 
 .footer__copy {
@@ -1001,8 +1001,8 @@ ul[role="list"] { list-style: none; }
 /* Diffuse sun glow — amber circle that moves over the active sector */
 .arc-wrap__glow {
   position: absolute;
-  width: 480px;
-  height: 480px;
+  width: 580px;
+  height: 580px;
   border-radius: 50%;
   background: radial-gradient(circle,
     rgba(245,166,35,0.30) 0%,
@@ -1185,12 +1185,12 @@ ul[role="list"] { list-style: none; }
   display: block;
 }
 
-/* Stretched panel link — covers entire sector */
+/* Stretched panel link — must be above arc__inner (z-index:1) so clicks reach the link */
 .arc__sector-link {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  z-index: 0;
+  z-index: 2;
 }
 .arc__sector-link:focus-visible {
   outline: 3px solid currentColor;
@@ -1215,7 +1215,7 @@ ul[role="list"] { list-style: none; }
 .nav__links .nav__comp--advisor  { color: #2D5A38; }
 .nav__links .nav__comp--advisor:hover  { background: rgba(74,122,88,0.12); color: #1A3522; }
 .nav__links .nav__comp--compass  { color: #7A5808; }
-.nav__links .nav__comp--compass:hover  { background: rgba(122,88,8,0.12); color: #5A4006; }
+.nav__links .nav__comp--compass:hover { background: rgba(122,88,8,0.12); color: #4A3300; }
 
 /* Responsive — below 720px collapse to vertical stack */
 @media (max-width: 720px) {

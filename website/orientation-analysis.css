@@ -8,7 +8,7 @@
 /* ----- Optimal orientation cards ----- */
 .oa__optimal-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-3);
   margin: var(--sp-6) 0 var(--sp-3);
 }
@@ -88,7 +88,7 @@
 /* ----- Economic highlight cards ----- */
 .oa__econ-highlights {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--sp-4);
   margin: var(--sp-6) 0;
 }
@@ -323,7 +323,7 @@
    =================================================================== */
 @media (max-width: 960px) {
   .oa__optimal-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .oa__econ-highlights {

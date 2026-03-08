@@ -58,10 +58,8 @@
           <path d="M24,6 C15,6 9,14 9,23 C9,34 24,44 24,44 C24,44 39,34 39,23 C39,14 33,6 24,6 Z" fill="currentColor"/>
           <circle cx="24" cy="22" r="6" fill="#FCFCFA"/>
         </svg>
-        <span class="location__text" id="location-text">
-          <span class="spinner" id="location-spinner" aria-hidden="true"></span>
-          Detecting location…
-        </span>
+        <span class="spinner spinner--hidden" id="location-spinner" aria-hidden="true"></span>
+        <span class="location__text" id="location-text">Detecting location…</span>
         <span class="location__coords" id="location-coords"></span>
       </button>
 
@@ -175,6 +173,14 @@
         </div>
         <div class="compass__delta" id="heading-delta" aria-live="polite">
           Waiting for compass…
+        </div>
+        <div class="compass__accuracy" id="compass-accuracy" hidden role="alert">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span id="compass-accuracy-text">Calibrate compass</span>
         </div>
       </div>
     </section>
