@@ -9,14 +9,24 @@
 .article-hero {
   position: relative;
   padding: calc(64px + var(--sp-16)) 0 var(--sp-12);
-  background: linear-gradient(170deg, 
-    var(--dawn-light) 0%, 
-    var(--bg-warm) 30%, 
-    var(--green-pale) 65%, 
-    var(--sage) 100%
-  );
+  background-image: var(--texture-paper), linear-gradient(170deg, var(--dawn-light) 0%, var(--bg-warm) 30%, var(--green-pale) 65%, var(--sage) 100%);
+  background-blend-mode: soft-light, normal;
   overflow: hidden;
   text-align: center;
+}
+
+.article-hero__wave {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  line-height: 0;
+}
+
+.article-hero__wave svg {
+  width: 100%;
+  height: 60px;
+  display: block;
 }
 
 .article-hero__organic {
@@ -45,10 +55,11 @@
 }
 
 .article-hero__title {
+  font-family: var(--font-serif);
   font-size: clamp(2.2rem, 5vw, 3.5rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin-bottom: var(--sp-4);
   background: linear-gradient(135deg, var(--amber) 0%, var(--ochre) 50%, var(--green-dark) 100%);
@@ -242,14 +253,17 @@
   margin: var(--sp-6) 0;
   padding: var(--sp-4) var(--sp-6);
   background: var(--bg-warm);
-  border-radius: var(--radius-md);
+  background-image: var(--texture-paper);
+  background-blend-mode: soft-light;
+  border-radius: 4px 14px 12px 3px / 3px 12px 14px 4px;
   overflow-x: auto;
   text-align: center;
 }
 
 .article__equation--boxed {
   border: 2px solid var(--sage);
-  background: linear-gradient(135deg, rgba(143, 189, 143, 0.06) 0%, rgba(245, 166, 35, 0.04) 100%);
+  background-image: var(--texture-paper), linear-gradient(135deg, rgba(143, 189, 143, 0.06) 0%, rgba(245, 166, 35, 0.04) 100%);
+  background-blend-mode: soft-light, normal;
 }
 
 /* ----- Callouts ----- */
@@ -257,8 +271,10 @@
   margin: var(--sp-6) 0;
   padding: var(--sp-5) var(--sp-6);
   background: var(--amber-light);
-  border-left: 3px solid var(--amber);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background-image: var(--texture-paper);
+  background-blend-mode: soft-light;
+  border-left: 4px solid var(--amber);
+  border-radius: 2px 14px 12px 2px / 2px 12px 14px 3px;
   font-size: 0.95rem;
   line-height: 1.7;
   color: var(--ink-light);
@@ -270,6 +286,8 @@
 
 .article__callout--note {
   background: var(--green-light);
+  background-image: var(--texture-paper);
+  background-blend-mode: soft-light;
   border-left-color: var(--green);
 }
 
@@ -566,6 +584,8 @@
 /* ----- Dig Deeper callout variant ----- */
 .article__callout--deepdive {
   background: rgba(45, 125, 210, 0.06);
+  background-image: var(--texture-canvas);
+  background-blend-mode: soft-light;
   border-left-color: #2D7DD2;
 }
 
@@ -632,8 +652,8 @@
 }
 
 .article__further-card-icon {
-  font-size: 1.6rem;
-  line-height: 1;
+  width: 40px;
+  height: 40px;
   margin-bottom: var(--sp-4);
 }
 

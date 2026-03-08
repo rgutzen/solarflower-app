@@ -1,116 +1,82 @@
 <!-- SPDX-FileCopyrightText: 2025 Robin Gutzen <robin.gutzen@outlook.com> -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!--
-  Solarflower icon sprite — raw organic mark language
-  Icons communicate through shape and color, not symbolic illustration.
+  Solarflower icon sprite — single-form clay marks
+  Each icon is one continuous closed path. Color carries meaning.
+  The clay filter roughens edges and adds surface grain.
   All symbols: viewBox="0 0 48 48"
 -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
 
+  <defs>
+    <!--
+      Clay filter: two-stage organic treatment.
+      1. feDisplacementMap warps the boundary so edges feel hand-pressed.
+      2. fractalNoise grain blended onto the surface via multiply gives
+         the matte, non-digital feel of fired clay or worn stone.
+    -->
+    <filter id="sf-clay" x="-8%" y="-8%" width="116%" height="116%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045 0.065"
+                    numOctaves="5" seed="9" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.5"
+                         xChannelSelector="R" yChannelSelector="G" result="warped"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="4"
+                    seed="2" result="grain"/>
+      <feColorMatrix in="grain" type="saturate" values="0" result="gray-grain"/>
+      <feComposite in="gray-grain" in2="warped" operator="in" result="masked-grain"/>
+      <feBlend in="warped" in2="masked-grain" mode="multiply"/>
+    </filter>
+  </defs>
+
   <!--
-    NOTEBOOK — amber
-    Geological strata: a pressed-clay form layered with knowledge marks.
-    Three wavy horizontal lines recall sediment deposit, not a book page.
-    A diagonal vein of amber in the upper-right corner anchors the warmth.
+    NOTEBOOK — amber #F5A623
+    A six-point clay tablet: roughly rectangular, no straight edges,
+    slightly wider at bottom than top. Knowledge as compressed earth.
   -->
   <symbol id="sf-notebook" viewBox="0 0 48 48">
-    <!-- Depth layer — second sheet behind, slightly offset -->
-    <path d="M13,9 C10,9 9,11 9,13 L9,37 C9,39 11,41 13,41"
-          fill="none" stroke="#D4A03A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
-    <!-- Main pressed-clay form: irregular quadrilateral, asymmetric corners -->
-    <path d="M11,15 C10,10 13,7 17,7 L34,8 C37,8 40,10 40,14 L39,37 C39,41 36,43 33,43 L12,42 C9,42 7,40 8,36 Z"
-          fill="#FFF3DC" stroke="#F5A623" stroke-width="1.5"/>
-    <!-- Strata line 1 — most prominent, amber -->
-    <path d="M15,19 C21,18 28,19 37,18" fill="none" stroke="#F5A623" stroke-width="2" stroke-linecap="round"/>
-    <!-- Strata line 2 — medium, ochre -->
-    <path d="M15,27 C20,26 27,27 36,26" fill="none" stroke="#D4A03A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-    <!-- Strata line 3 — faintest, deep ochre -->
-    <path d="M15,35 C21,34 27,35 35,34" fill="none" stroke="#9A7128" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
-    <!-- Mineral vein — diagonal amber accent, upper right -->
-    <path d="M33,9 L39,15" stroke="#F5A623" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+    <path d="M 11,9 L 37,8 L 41,11 L 40,40 L 10,42 L 7,38 Z"
+          fill="#F5A623" filter="url(#sf-clay)"/>
   </symbol>
 
   <!--
-    ADVISOR — blue
-    Mineral crystal cross-section: an asymmetric faceted heptagon.
-    Interior lines radiate from a hub point, creating light-catching facets.
-    No chart bars, no screen — just the precision of a formed mineral.
+    ADVISOR — blue #2D7DD2
+    An asymmetric rhombus: precision formed through natural geometry.
+    Slightly off-center so it feels found, not constructed.
   -->
   <symbol id="sf-advisor" viewBox="0 0 48 48">
-    <!-- Crystal body -->
-    <path d="M24,5 L41,14 L44,30 L34,44 L14,44 L5,30 L8,14 Z"
-          fill="#E8F1FB" stroke="#2D7DD2" stroke-width="1.5"/>
-    <!-- Hub point (interior focal point, slightly above center) -->
-    <!-- Top facet — catches most light -->
-    <path d="M24,5 L41,14 L24,21 Z" fill="#2D7DD2" opacity="0.22"/>
-    <!-- Upper-right facet -->
-    <path d="M24,21 L41,14 L44,30 Z" fill="#1B5FA0" opacity="0.16"/>
-    <!-- Lower-right facet -->
-    <path d="M24,21 L44,30 L34,44 Z" fill="#2D7DD2" opacity="0.12"/>
-    <!-- Bottom facet -->
-    <path d="M24,21 L34,44 L14,44 Z" fill="#1B5FA0" opacity="0.08"/>
-    <!-- Lower-left facet -->
-    <path d="M24,21 L14,44 L5,30 Z" fill="#2D7DD2" opacity="0.12"/>
-    <!-- Upper-left facet -->
-    <path d="M24,21 L5,30 L8,14 Z" fill="#1B5FA0" opacity="0.16"/>
-    <!-- Left facet -->
-    <path d="M24,21 L8,14 L24,5 Z" fill="#2D7DD2" opacity="0.1"/>
-    <!-- Facet edge lines radiating from hub -->
-    <line x1="24" y1="21" x2="41" y2="14" stroke="#2D7DD2" stroke-width="0.8" opacity="0.35"/>
-    <line x1="24" y1="21" x2="44" y2="30" stroke="#2D7DD2" stroke-width="0.8" opacity="0.3"/>
-    <line x1="24" y1="21" x2="34" y2="44" stroke="#2D7DD2" stroke-width="0.8" opacity="0.25"/>
-    <line x1="24" y1="21" x2="14" y2="44" stroke="#2D7DD2" stroke-width="0.8" opacity="0.25"/>
-    <line x1="24" y1="21" x2="5"  y2="30" stroke="#2D7DD2" stroke-width="0.8" opacity="0.3"/>
-    <line x1="24" y1="21" x2="8"  y2="14" stroke="#2D7DD2" stroke-width="0.8" opacity="0.35"/>
-    <line x1="24" y1="21" x2="24" y2="5"  stroke="#2D7DD2" stroke-width="0.8" opacity="0.4"/>
+    <path d="M 25,4 L 43,22 L 24,44 L 5,24 Z"
+          fill="#2D7DD2" filter="url(#sf-clay)"/>
   </symbol>
 
   <!--
-    COMPASS — sage / ink
-    Raw directionality: an organic ellipse ring with a bold asymmetric wedge.
-    North is heavy and dark; south is light and sage.
-    No rose, no decoration — just oriented weight.
+    COMPASS — dark green #3D5240
+    An upward-pointing oval: elongation conveys direction without a rose.
+    The form narrows toward the top — where you're headed.
   -->
   <symbol id="sf-compass" viewBox="0 0 48 48">
-    <!-- Outer ring — slightly irregular, taller than wide -->
-    <ellipse cx="24" cy="24" rx="19" ry="18" fill="#F5F6F5" stroke="#8FBD8F" stroke-width="2"/>
-    <!-- Inner ring — faint organic trace -->
-    <ellipse cx="24" cy="24" rx="13" ry="12" fill="none" stroke="#8FBD8F" stroke-width="0.8" opacity="0.3"/>
-    <!-- North wedge — bold, ink-dark, concave base for depth -->
-    <path d="M24,7 L30,23 L24,20 L18,23 Z" fill="#1B2E1B" opacity="0.72"/>
-    <!-- South wedge — lighter, sage, complementary -->
-    <path d="M24,41 L30,25 L24,28 L18,25 Z" fill="#8FBD8F" opacity="0.5"/>
-    <!-- Pivot pin -->
-    <circle cx="24" cy="24" r="2.5" fill="#3D5240" opacity="0.6"/>
+    <path d="M 24,5 C 28,4 38,16 38,29 C 38,38 32,44 24,44 C 16,44 10,38 10,29 C 10,16 20,4 24,5 Z"
+          fill="#3D5240" filter="url(#sf-clay)"/>
   </symbol>
 
   <!--
-    SUN — amber
-    A warm, slightly irregular disc. Used in field guide and as decorative mark.
-    Not a star, not a flower — just radiant mass.
+    SUN — amber #F5A623
+    An irregular seven-sided polygon: radiant mass without rays.
+    The asymmetry in the vertices makes it feel like a cast impression.
   -->
   <symbol id="sf-sun" viewBox="0 0 48 48">
-    <circle cx="24" cy="24" r="14" fill="#F5A623"/>
-    <circle cx="24" cy="24" r="14" fill="url(#sf-sun-warm)" opacity="0.4"/>
-    <!-- Irregular outer glow ring -->
-    <ellipse cx="24" cy="23" rx="20" ry="19" fill="none" stroke="#F5A623" stroke-width="1" opacity="0.25"/>
-    <defs>
-      <radialGradient id="sf-sun-warm" cx="40%" cy="35%" r="60%">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
-        <stop offset="100%" stop-color="#D4A03A" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
+    <path d="M 24,5 L 40,13 L 43,30 L 33,43 L 13,42 L 5,27 L 9,12 Z"
+          fill="#F5A623" filter="url(#sf-clay)"/>
   </symbol>
 
   <!--
-    LOCATION — terracotta
-    A weighted drop form: broader at base, tapered upward.
-    Clay color grounds it in soil, place, rootedness.
+    LOCATION — terracotta #C75B39
+    A weighted teardrop: broad at the equator, tapering below.
+    Clay color grounds it in soil and place.
   -->
   <symbol id="sf-location" viewBox="0 0 48 48">
-    <path d="M24,6 C15,6 9,13 9,21 C9,32 24,44 24,44 C24,44 39,32 39,21 C39,13 33,6 24,6 Z"
-          fill="#E8A08A" stroke="#C75B39" stroke-width="1.5"/>
-    <circle cx="24" cy="21" r="5.5" fill="#8B3D26" opacity="0.45"/>
+    <path d="M 24,6 C 15,6 9,14 9,23 C 9,34 24,44 24,44 C 24,44 39,34 39,23 C 39,14 33,6 24,6 Z"
+          fill="#C75B39" filter="url(#sf-clay)"/>
   </symbol>
 
 </svg>

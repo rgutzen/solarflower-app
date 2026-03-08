@@ -35,6 +35,50 @@
 </head>
 <body class="article-page">
 
+  <!-- Inline SVG icon sprite — single-form clay marks -->
+  <!-- Canonical source: assets/icons.svg -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <defs>
+      <filter id="sf-clay" x="-20%" y="-20%" width="140%" height="140%"
+              color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045 0.065"
+                      numOctaves="5" seed="9" result="warp"/>
+        <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.5"
+                           xChannelSelector="R" yChannelSelector="G" result="warped"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="4"
+                      seed="2" result="grain"/>
+        <feColorMatrix in="grain" type="saturate" values="0" result="gray-grain"/>
+        <feComposite in="gray-grain" in2="warped" operator="in" result="masked-grain"/>
+        <feBlend in="warped" in2="masked-grain" mode="multiply"/>
+      </filter>
+    </defs>
+    <!-- NOTEBOOK: clay tablet -->
+    <symbol id="sf-notebook" viewBox="0 0 48 48" overflow="visible">
+      <path d="M 11,9 L 37,8 L 41,11 L 40,40 L 10,42 L 7,38 Z"
+            fill="currentColor" filter="url(#sf-clay)"/>
+    </symbol>
+    <!-- ADVISOR: organic asymmetric hexagon -->
+    <symbol id="sf-advisor" viewBox="0 0 48 48" overflow="visible">
+      <path d="M 22,5 L 40,13 L 43,29 L 29,43 L 11,40 L 6,22 Z"
+            fill="currentColor" filter="url(#sf-clay)"/>
+    </symbol>
+    <!-- COMPASS: elongated teardrop — pointy top, broad base -->
+    <symbol id="sf-compass" viewBox="0 0 48 48" overflow="visible">
+      <path d="M 24,5 C 26,6 39,18 39,31 C 39,41 32,44 24,44 C 16,44 9,41 9,31 C 9,18 22,6 24,5 Z"
+            fill="currentColor" filter="url(#sf-clay)"/>
+    </symbol>
+    <!-- SUN: irregular heptagon -->
+    <symbol id="sf-sun" viewBox="0 0 48 48" overflow="visible">
+      <path d="M 24,5 L 40,13 L 43,30 L 33,43 L 13,42 L 5,27 L 9,12 Z"
+            fill="currentColor" filter="url(#sf-clay)"/>
+    </symbol>
+    <!-- LOCATION: weighted teardrop -->
+    <symbol id="sf-location" viewBox="0 0 48 48" overflow="visible">
+      <path d="M 24,6 C 15,6 9,14 9,23 C 9,34 24,44 24,44 C 24,44 39,34 39,23 C 39,14 33,6 24,6 Z"
+            fill="currentColor" filter="url(#sf-clay)"/>
+    </symbol>
+  </svg>
+
   <!-- ================================================================== -->
   <!-- NAVIGATION                                                         -->
   <!-- ================================================================== -->
@@ -42,12 +86,28 @@
     <div class="nav__inner container">
       <a href="index.html" class="nav__brand" aria-label="Solarflower home">
         <img src="assets/logo.svg" alt="" width="36" height="36" class="nav__logo">
-        <span class="nav__wordmark">Solarflower</span>
+        <span class="nav__wordmark dark-green">Solarflower</span>
       </a>
       <ul class="nav__links" role="list">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="index.html#components">Components</a></li>
-        <li><a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer" class="nav__github" aria-label="View on GitHub">
+        <li>
+          <a href="article.html" class="nav__comp nav__comp--notebook" aria-current="page">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><use href="#sf-notebook"/></svg>
+            <span>Science</span>
+          </a>
+        </li>
+        <li>
+          <a href="solar-advisor.html" class="nav__comp nav__comp--advisor">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><use href="#sf-advisor"/></svg>
+            <span>Solar Advisor</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav__comp nav__comp--compass" aria-disabled="true" tabindex="-1">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><use href="#sf-compass"/></svg>
+            <span>Panel Compass</span>
+          </a>
+        </li>
+        <li><a href="https://github.com/rgutzen/solarflower" target="_blank" rel="noopener noreferrer" class="nav__github" aria-label="View on GitHub">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         </a></li>
       </ul>
@@ -69,6 +129,11 @@
       <h1 class="article-hero__title">From Sunlight to&nbsp;Watts</h1>
       <p class="article-hero__subtitle">A First-Principles Derivation of Solar Panel Power Output</p>
       <p class="article-hero__lead">Every hour, 430 quintillion joules of solar energy reach Earth's surface — enough to power human civilisation for an entire year. But how much of that bounty can a single rooftop panel actually capture? And how does the answer shift with latitude, tilt angle, and season? Starting from nuclear fusion in the Sun's core, we trace every energy transformation — across 150 million kilometres of space, through the atmosphere, and down to the kilowatt-hours on your electricity meter.</p>
+    </div>
+    <div class="article-hero__wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,30 C360,55 720,10 1080,35 C1260,47 1380,22 1440,30 L1440,60 L0,60 Z" fill="var(--bg-warm)"/>
+      </svg>
     </div>
   </header>
 
@@ -624,7 +689,9 @@
         <div class="article__further-grid">
 
           <div class="article__further-card">
-            <div class="article__further-card-icon" aria-hidden="true">&#9728;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #F5A623; overflow: visible;"><use href="#sf-sun"/></svg>
+            </div>
             <h4>Solar Physics &amp; Astronomy</h4>
             <p>The Sun as a star — nuclear fusion, the solar spectrum, the 11-year activity cycle, and why the "Solar Constant" isn't quite constant over geological time.</p>
             <ul>
@@ -635,7 +702,9 @@
           </div>
 
           <div class="article__further-card">
-            <div class="article__further-card-icon" aria-hidden="true">&#9928;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #C75B39; overflow: visible;"><use href="#sf-location"/></svg>
+            </div>
             <h4>Climate &amp; Solar Resources</h4>
             <p>How clouds, aerosols, humidity, and regional climate patterns shape how much sunlight actually reaches a panel. Tools for finding real irradiance data anywhere on Earth.</p>
             <ul>
@@ -646,7 +715,9 @@
           </div>
 
           <div class="article__further-card">
-            <div class="article__further-card-icon" aria-hidden="true">&#9889;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #F5A623; overflow: visible;"><use href="#sf-notebook"/></svg>
+            </div>
             <h4>Photovoltaic Physics &amp; Technology</h4>
             <p>From the quantum mechanics of the photovoltaic effect to silicon crystal growth, cell architectures (mono-Si, poly-Si, thin-film, perovskite), and the theoretical efficiency limits (Shockley–Queisser).</p>
             <ul>
@@ -657,7 +728,9 @@
           </div>
 
           <div class="article__further-card">
-            <div class="article__further-card-icon" aria-hidden="true">&#9827;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #D4A03A; overflow: visible;"><use href="#sf-sun"/></svg>
+            </div>
             <h4>Solar Thermal &amp; Concentrated Solar Power</h4>
             <p>The alternative path: using sunlight as <em>heat</em> rather than light. From domestic hot water collectors to gigawatt-scale power towers that store energy as molten salt.</p>
             <ul>
@@ -668,7 +741,9 @@
           </div>
 
           <div class="article__further-card">
-            <div class="article__further-card-icon" aria-hidden="true">&#128268;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #3D5240; overflow: visible;"><use href="#sf-compass"/></svg>
+            </div>
             <h4>Electricity Grids &amp; Infrastructure</h4>
             <p>How electricity from a rooftop panel joins a grid built for centralised power stations. The challenges of variable renewables, the role of storage, net metering, and what the global energy transition actually requires.</p>
             <ul>
@@ -679,12 +754,14 @@
           </div>
 
           <div class="article__further-card article__further-card--highlight">
-            <div class="article__further-card-icon" aria-hidden="true">&#127803;</div>
+            <div class="article__further-card-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 48 48" style="color: #2D7DD2; overflow: visible;"><use href="#sf-advisor"/></svg>
+            </div>
             <h4>Put It Into Practice</h4>
             <p>The physics above is the foundation. The <strong>Solarflower Solar Advisor</strong> builds on it with real weather data, 15,000+ panel and inverter models, and a full loss chain — to give you professional-grade annual yield estimates for any location.</p>
             <ul>
               <li><a href="solar-advisor.html">Open the Solar Advisor &#8594;</a></li>
-              <li><a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer">Explore the open-source code on GitHub</a></li>
+              <li><a href="https://github.com/rgutzen/solarflower" target="_blank" rel="noopener noreferrer">Explore the open-source code on GitHub</a></li>
             </ul>
           </div>
 
@@ -703,9 +780,9 @@
         <img src="assets/logo.svg" alt="" width="28" height="28">
         <span>Solarflower</span>
       </div>
-      <p class="footer__copy">&copy; 2025 Robin Gutzen &middot; <a href="https://github.com/rgutzen/solarflower-app/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0-or-later</a></p>
+      <p class="footer__copy">&copy; 2025 Robin Gutzen &middot; <a href="https://github.com/rgutzen/solarflower/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0-or-later</a></p>
       <div class="footer__links">
-        <a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <a href="https://github.com/rgutzen/solarflower" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         </a>
         <a href="mailto:robin.gutzen@outlook.com" aria-label="Email Robin Gutzen">

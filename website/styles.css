@@ -100,10 +100,20 @@
   --radius-pebble: 65% 35% 55% 45% / 45% 55% 65% 35%;
   --radius-pot: 30px 70px 40px 60px / 60px 40px 70px 30px;
 
-  /* Textures (Phase 2) */
-  --texture-paper: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23ffffff' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E");
-  --texture-canvas: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0zM20 20h20v20H20z' fill='%23000' fill-opacity='0.015' fill-rule='evenodd'/%3E%3C/svg%3E");
-  --texture-fiber: url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence baseFrequency='0.05' numOctaves='2' type='fractalNoise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.025'/%3E%3C/svg%3E");
+  /* Textures (Phase 2, strengthened Phase 6) */
+  /* paper: fine high-freq grain, lit at an angle — for amber/warm surfaces */
+  --texture-paper: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23ffffff' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.07'/%3E%3C/svg%3E");
+  /* clay: mid-freq fractal noise on a large tile — replaces geometric checkerboard */
+  --texture-canvas: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.35 0.45' numOctaves='4' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)' opacity='0.08'/%3E%3C/svg%3E");
+  /* fiber: low-freq coarse grain — for rough fabric / stone feel */
+  --texture-fiber: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence baseFrequency='0.05 0.08' numOctaves='3' seed='11' type='fractalNoise' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.07'/%3E%3C/svg%3E");
+  /* Sector-specific clay tablet textures */
+  /* soil: coarse low-freq grain, earthy deposit feel */
+  --texture-soil: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='soil'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.22 0.30' numOctaves='3' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23soil)' opacity='0.38'/%3E%3C/svg%3E");
+  /* moss: mid-freq grain, slightly fibrous feel */
+  --texture-moss: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='moss'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.42 0.52' numOctaves='4' seed='13' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23moss)' opacity='0.32'/%3E%3C/svg%3E");
+  /* gold: fine high-freq grain, fired ceramic feel */
+  --texture-gold: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='gold'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55 0.62' numOctaves='4' seed='21' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23gold)' opacity='0.28'/%3E%3C/svg%3E");
 
   /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -124,8 +134,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  /* Subtle organic texture via repeating SVG noise */
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  /* Base paper grain — large tile to avoid visible seams */
+  background-image: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
 }
 
 img, svg { display: block; max-width: 100%; height: auto; }
@@ -149,7 +159,9 @@ ul[role="list"] { list-style: none; }
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(252, 252, 250, 0.88);
+  background: var(--bg-warm);
+  background-image: var(--texture-canvas);
+  background-blend-mode: soft-light;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   transition: background var(--duration) var(--ease),
@@ -175,7 +187,9 @@ ul[role="list"] { list-style: none; }
 }
 
 .nav--scrolled {
-  background: rgba(252, 252, 250, 0.96);
+  background: var(--bg-warm);
+  background-image: var(--texture-canvas);
+  background-blend-mode: soft-light;
   box-shadow: 0 2px 12px rgba(27, 46, 27, 0.08);
 }
 
@@ -205,7 +219,7 @@ ul[role="list"] { list-style: none; }
 .nav__links {
   display: flex;
   align-items: center;
-  gap: var(--sp-8);
+  gap: var(--sp-4);
 }
 
 .nav__links a {
@@ -216,8 +230,8 @@ ul[role="list"] { list-style: none; }
   padding: var(--sp-2) 0;
 }
 
-.nav__links a:hover,
-.nav__links a:focus-visible {
+.nav__links a:not(.nav__comp):hover,
+.nav__links a:not(.nav__comp):focus-visible {
   color: var(--amber);
 }
 
@@ -354,12 +368,23 @@ ul[role="list"] { list-style: none; }
 .hero__philosophy {
   margin-top: var(--sp-8);
   max-width: 480px;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   line-height: 1.75;
   color: var(--ink-light);
   position: relative;
-  padding-left: var(--sp-5);
-  border-left: 2px solid var(--sage);
+  padding-left: 24px;
+}
+.hero__philosophy::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: auto;
+  width: 18px;
+  height: 900px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 600' preserveAspectRatio='none'%3E%3Cpath d='M9,0 C13,38 5,72 9,108 C13,142 5,176 9,210 C13,244 5,278 9,312 C13,346 5,380 9,414 C13,448 5,482 9,516 C13,550 9,580 9,600' stroke='%236B8F71' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,85 C15,76 22,66 18,54' stroke='%236B8F71' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,175 C3,166 -4,156 0,144' stroke='%236B8F71' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,265 C15,256 22,246 18,234' stroke='%236B8F71' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,355 C3,346 -4,336 0,324' stroke='%236B8F71' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,445 C15,436 22,426 18,414' stroke='%236B8F71' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9,530 C3,521 -4,511 0,500' stroke='%236B8F71' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 18px 900px;
 }
 
 .hero__subtitle {
@@ -542,7 +567,7 @@ ul[role="list"] { list-style: none; }
 }
 
 .section-lead {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: var(--ink-light);
   line-height: 1.7;
 }
@@ -665,6 +690,8 @@ ul[role="list"] { list-style: none; }
 }
 
 .card__icon {
+  display: flex;
+  justify-content: center;
   margin-bottom: var(--sp-5);
 }
 
@@ -674,8 +701,9 @@ ul[role="list"] { list-style: none; }
 
 .card__icon-svg {
   display: block;
-  width: 52px;
-  height: 52px;
+  width: 80px;
+  height: 80px;
+  overflow: visible;
   transform-origin: center;
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -696,7 +724,8 @@ ul[role="list"] { list-style: none; }
 
 .card__badge {
   display: inline-block;
-  align-self: flex-start;
+  align-self: center;
+  text-align: center;
   padding: var(--sp-1) var(--sp-3);
   border-radius: 999px;
   font-size: 0.72rem;
@@ -779,16 +808,6 @@ ul[role="list"] { list-style: none; }
   position: relative;
 }
 
-.open-source::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--terracotta) 50%, transparent 100%);
-  opacity: 0.3;
-}
 
 .oss__inner {
   display: grid;
@@ -943,6 +962,281 @@ ul[role="list"] { list-style: none; }
 }
 
 /* ===================================================================
+   ARC LAYOUT — heliotropism component panels
+   Three sectors arc like a sunflower head tracking the sun.
+   =================================================================== */
+
+.arc-section {
+  position: relative;
+  padding: var(--sp-20) 0 0;
+  overflow: visible;
+  /* Sky gradient: deep blue at top fading into page white at bottom */
+  background: linear-gradient(180deg,
+    #6BB8D4 0%,
+    #96CCE0 18%,
+    #BDE0EE 42%,
+    #D9EEF6 62%,
+    #EEF6FB 80%,
+    #FCFCFA 100%);
+}
+
+/* Outer wrapper — positioned context for glow + sectors */
+.arc-wrap {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 var(--sp-6) var(--sp-8);
+}
+
+/* Background arc curve SVG (the sun's path) */
+.arc-wrap__sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Diffuse sun glow — amber circle that moves over the active sector */
+.arc-wrap__glow {
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(245,166,35,0.30) 0%,
+    rgba(245,166,35,0.09) 45%,
+    transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              top  0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.4s ease;
+  left: 50%; top: 30%;
+}
+.arc-wrap[data-hover="left"]   .arc-wrap__glow { opacity: 1; left: 17%; top: 30%; }
+.arc-wrap[data-hover="center"] .arc-wrap__glow { opacity: 1; left: 50%; top: 8%;  }
+.arc-wrap[data-hover="right"]  .arc-wrap__glow { opacity: 1; left: 83%; top: 30%; }
+
+/* Three-column grid; arc shape achieved with transforms */
+.arc-wrap__sectors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-8);
+  align-items: start;
+  padding-top: var(--sp-10);
+  padding-bottom: 90px;
+}
+
+/* Shared sector base */
+.arc__sector {
+  position: relative;
+  padding: var(--sp-8) var(--sp-6) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  z-index: 1;
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.5s var(--ease);
+}
+
+.arc__sector::after {
+  content: '✦';
+  position: absolute;
+  bottom: var(--sp-3);
+  right: var(--sp-4);
+  font-size: 14px;
+  opacity: 0.18;
+  transition: opacity 0.3s var(--ease);
+  transform: rotate(15deg);
+}
+
+/* Shared sector text overrides — inherit from sector color */
+.arc__sector .card__title,
+.arc__sector .card__desc  { color: inherit; }
+.arc__sector .card__badge { color: inherit; align-self: center; }
+
+/* LEFT — sandy warm soil + dark brown text */
+.arc__sector--left {
+  background-color: #C9A06A;
+  background-image: var(--texture-soil);
+  border: 2px solid #9B6E3A;
+  border-top: 5px solid #7A4E1A;
+  border-radius: 14px 10px 16px 13px / 12px 16px 11px 15px;
+  box-shadow: 5px 10px 28px rgba(40,16,4,0.28);
+  color: #3D1A00;
+  transform: translateY(70px) rotate(-6deg);
+  transform-origin: center bottom;
+  cursor: pointer;
+}
+.arc__sector--left::after            { color: rgba(61,26,0,0.3); }
+.arc__sector--left .card__badge      { background: rgba(0,0,0,0.10); }
+
+/* CENTER — light moss green + dark green text */
+.arc__sector--center {
+  background-color: #7BAE8C;
+  background-image: var(--texture-moss);
+  border: 2px solid #4D8060;
+  border-top: 5px solid #2D5A3A;
+  border-radius: 10px 16px 12px 18px / 16px 11px 17px 12px;
+  box-shadow: 0px 14px 36px rgba(16,40,22,0.22);
+  color: #0D2B12;
+  cursor: pointer;
+}
+.arc__sector--center::after          { color: rgba(13,43,18,0.3); }
+.arc__sector--center .card__badge    { background: rgba(0,0,0,0.10); }
+
+/* RIGHT — bright golden sun + dark brown text */
+.arc__sector--right {
+  background-color: #E8C02A;
+  background-image: var(--texture-gold);
+  border: 2px solid #A07A10;
+  border-top: 5px solid #7A5808;
+  border-radius: 16px 13px 11px 17px / 11px 15px 16px 12px;
+  box-shadow: -5px 10px 28px rgba(120,80,4,0.28);
+  color: #2D1500;
+  transform: translateY(70px) rotate(6deg);
+  transform-origin: center bottom;
+}
+.arc__sector--right::after           { color: rgba(45,21,0,0.4); }
+.arc__sector--right .card__badge     { background: rgba(0,0,0,0.12); }
+
+/* Active sector: rises toward the sun, deeper shadow */
+.arc-wrap[data-hover="left"]   .arc__sector--left   { transform: translateY(18px) rotate(-6deg); box-shadow: 5px 22px 50px rgba(40,16,4,0.52); }
+.arc-wrap[data-hover="center"] .arc__sector--center { transform: translateY(-18px);              box-shadow: 0px 26px 56px rgba(16,40,22,0.48); }
+.arc-wrap[data-hover="right"]  .arc__sector--right  { transform: translateY(18px) rotate(6deg);  box-shadow: -5px 22px 50px rgba(120,80,4,0.44); }
+
+.arc-wrap[data-hover="left"]   .arc__sector--left::after,
+.arc-wrap[data-hover="center"] .arc__sector--center::after,
+.arc-wrap[data-hover="right"]  .arc__sector--right::after { opacity: 0.5; }
+
+/* Icon hover wobble */
+.arc-wrap[data-hover="left"]   .arc__sector--left   .card__icon-svg,
+.arc-wrap[data-hover="center"] .arc__sector--center .card__icon-svg,
+.arc-wrap[data-hover="right"]  .arc__sector--right  .card__icon-svg {
+  animation: icon-wobble 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Inner content layout — sits above the stretched link (z-index: 0) */
+.arc__inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* Counter-tilt outer sectors so text reads upright;
+   nudge content toward page center (away from outer edge) */
+.arc__sector--left .arc__inner {
+  transform: rotate(6deg);
+  transform-origin: center top;
+  padding-left: 28px;
+}
+.arc__sector--right .arc__inner {
+  transform: rotate(-6deg);
+  transform-origin: center top;
+  padding-right: 28px;
+}
+
+/* Sunflower PNG container — sits at bottom of arc-section, behind wave */
+.arc-wrap__flower {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 230px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Three images stacked; one fades in based on arc-section data-hover */
+.arc-flower-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+/* Default / no hover: noon */
+.arc-section:not([data-hover]) .arc-flower-img--noon,
+.arc-section[data-hover=""]    .arc-flower-img--noon    { opacity: 1; }
+.arc-section[data-hover="left"]   .arc-flower-img--morning { opacity: 1; }
+.arc-section[data-hover="center"] .arc-flower-img--noon    { opacity: 1; }
+.arc-section[data-hover="right"]  .arc-flower-img--evening { opacity: 1; }
+
+/* Organic wave divider at section bottom */
+.arc__wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  line-height: 0;
+}
+.arc__wave svg {
+  width: 100%;
+  height: 80px;
+  display: block;
+}
+
+/* Stretched panel link — covers entire sector */
+.arc__sector-link {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+}
+.arc__sector-link:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* Nav component pills */
+.nav__links .nav__comp svg { overflow: visible; }
+.nav__links .nav__comp {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.nav__links .nav__comp--notebook { color: #8B5230; }
+.nav__links .nav__comp--notebook:hover { background: rgba(139,82,48,0.12); color: #5A3015; }
+.nav__links .nav__comp--advisor  { color: #2D5A38; }
+.nav__links .nav__comp--advisor:hover  { background: rgba(74,122,88,0.12); color: #1A3522; }
+.nav__links .nav__comp--compass  { color: #7A5808; opacity: 0.55; cursor: default; pointer-events: none; }
+
+/* Responsive — below 720px collapse to vertical stack */
+@media (max-width: 720px) {
+  .arc-wrap__sectors {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    padding-bottom: 0;
+  }
+  .arc__sector--left,
+  .arc__sector--right { transform: none; }
+  .arc-wrap[data-hover="left"]  .arc__sector--left,
+  .arc-wrap[data-hover="right"] .arc__sector--right { transform: translateY(-6px); }
+  .arc__sector--left  .arc__inner,
+  .arc__sector--right .arc__inner { transform: none; padding-left: 0; padding-right: 0; }
+  .arc-wrap__glow   { display: none; }
+  .arc-wrap__flower { display: none; }
+  .arc-wrap__sky    { display: none; }
+  .arc__wave        { display: none; }
+  .arc-section      { padding-bottom: var(--sp-8); }
+}
+
+/* ===================================================================
    MOTION SENSITIVITY (Section 4.4)
    =================================================================== */
 @media (prefers-reduced-motion: reduce) {
@@ -954,6 +1248,10 @@ ul[role="list"] { list-style: none; }
   html { scroll-behavior: auto; }
   .btn--primary:not(:hover):not(:focus-visible) { animation: none; }
   .card:hover .card__icon-svg { animation: none; }
+  .arc__sector { transition: none; }
+  .arc__sector--left, .arc__sector--right { transform: none !important; }
+  .arc-wrap__glow { transition: none; opacity: 0 !important; }
+  .arc-flower-img { transition: none; opacity: 0 !important; }
 }
 
 /* ===================================================================
@@ -980,13 +1278,13 @@ ul[role="list"] { list-style: none; }
     justify-content: center;
   }
   .hero__philosophy {
-    border-left: none;
     padding-left: 0;
     border-top: 2px solid var(--sage);
     padding-top: var(--sp-5);
     margin: var(--sp-6) auto 0;
     max-width: 520px;
   }
+  .hero__philosophy::before { display: none; }
   .hero__illustration {
     margin-bottom: var(--sp-4);
   }

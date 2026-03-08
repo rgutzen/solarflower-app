@@ -1,9 +1,11 @@
 # Solarflower Visual Design Guidelines
 
-**Version:** 1.3
-**Last Updated:** March 2025
+**Version:** 1.4
+**Last Updated:** March 2026
 **Maintainer:** Solarflower Agents
-**Changelog:** v1.3 — Phase 5 Typography: Lora serif + Caveat handwritten fonts
+**Changelog:**
+- v1.4 — Phase 6 complete: clay mark icon system, arc panel design, nav pills, vine border, texture overhaul
+- v1.3 — Phase 5 Typography: Lora serif + Caveat handwritten fonts
 
 ---
 
@@ -910,19 +912,159 @@ h1, h2, .hero__title, .section-title, .card__title {
 }
 ```
 
-### 🚧 Phase 6: Iconography Evolution
+### ✅ Phase 6: Clay Mark Icon System + Arc Panel Design (COMPLETE in v1.4)
+
+#### 6A — Clay Mark Icons
+
+Single-path closed-form SVG symbols rendered through an organic clay filter. Each icon is one continuous path — no outlines, no strokes — just a filled shape that looks hand-pressed.
+
+**Filter stack** (`id="sf-clay"`)
+```xml
+<filter id="sf-clay" x="-20%" y="-20%" width="140%" height="140%"
+        color-interpolation-filters="sRGB">
+  <!-- Stage 1: warp boundary with fractal displacement -->
+  <feTurbulence type="fractalNoise" baseFrequency="0.045 0.065"
+                numOctaves="5" seed="9" result="warp"/>
+  <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.5"
+                     xChannelSelector="R" yChannelSelector="G" result="warped"/>
+  <!-- Stage 2: multiply grain on surface for matte clay feel -->
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="4"
+                seed="2" result="grain"/>
+  <feColorMatrix in="grain" type="saturate" values="0" result="gray-grain"/>
+  <feComposite in="gray-grain" in2="warped" operator="in" result="masked-grain"/>
+  <feBlend in="warped" in2="masked-grain" mode="multiply"/>
+</filter>
+```
+
+Key implementation rules:
+- Filter region is **20% margin** (x="-20%" width="140%") — displacement needs headroom
+- All `<symbol>` elements must have `overflow="visible"` so the filter bleed isn't clipped
+- `fill="currentColor"` — icons inherit the panel/context text color automatically
+- Inline the sprite at top of `<body style="display:none">` so `<use href="#id">` works cross-file
+
+**Icon library** (all `viewBox="0 0 48 48"`)
+
+| ID | Shape | Default color |
+|----|-------|---------------|
+| `sf-notebook` | Six-point clay tablet (wider at bottom) | `#F5A623` amber |
+| `sf-advisor`  | Asymmetric hexagon (off-center feels found, not constructed) | `#2D7DD2` blue |
+| `sf-compass`  | Elongated teardrop, pointy top / broad base | `#3D5240` dark green |
+| `sf-sun`      | Irregular heptagon, radiant mass without rays | `#F5A623` amber |
+| `sf-location` | Weighted teardrop, broad equator tapering below | `#C75B39` terracotta |
+
+Path data (keep vertices ≥5 units from the 48×48 boundary so filter displacement doesn't clip):
+```xml
+<!-- notebook -->
+<path d="M 11,9 L 37,8 L 41,11 L 40,40 L 10,42 L 7,38 Z"/>
+<!-- advisor -->
+<path d="M 22,5 L 40,13 L 43,29 L 29,43 L 11,40 L 6,22 Z"/>
+<!-- compass -->
+<path d="M 24,5 C 26,6 39,18 39,31 C 39,41 32,44 24,44 C 16,44 9,41 9,31 C 9,18 22,6 24,5 Z"/>
+<!-- sun -->
+<path d="M 24,5 L 40,13 L 43,30 L 33,43 L 13,42 L 5,27 L 9,12 Z"/>
+<!-- location -->
+<path d="M 24,6 C 15,6 9,14 9,23 C 9,34 24,44 24,44 C 24,44 39,34 39,23 C 39,14 33,6 24,6 Z"/>
+```
+
+**CSS for icon SVGs:**
+```css
+.card__icon-svg {
+  width: 80px; height: 80px;
+  overflow: visible;         /* essential — lets clay filter bleed outside the box */
+  transform-origin: center;
+}
+/* Nav pill icons */
+.nav__links .nav__comp svg { overflow: visible; }
+```
+
+#### 6B — Arc Panel Design
+
+Three tilted "clay tablet" sectors arranged in an arc. Each panel is its own color world — one light background + one dark text color. Icons and text inherit the panel's `color` property.
+
+**Color identities:**
+```css
+.arc__sector--left   { background-color: #C9A06A; color: #3D1A00; }  /* sandy soil */
+.arc__sector--center { background-color: #7BAE8C; color: #0D2B12; }  /* light moss */
+.arc__sector--right  { background-color: #E8C02A; color: #2D1500; }  /* golden sun */
+```
+
+**Texture strengths** (strengthened 3× from Phase 2 baseline):
+```css
+--texture-soil: /* fractalNoise 0.22×0.30, opacity 0.38 */
+--texture-moss: /* fractalNoise 0.42×0.52, opacity 0.32 */
+--texture-gold: /* fractalNoise 0.55×0.62, opacity 0.28 */
+```
+
+**Full-panel link pattern** (entire sector clickable):
+```css
+.arc__sector { position: relative; }
+.arc__sector-link { position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+.arc__inner { position: relative; z-index: 1; }  /* sits above the stretched link */
+```
+
+#### 6C — Navigation Pills
+
+Replace plain text links with component pills: icon + label, colored per component.
+
+```html
+<a href="article.html" class="nav__comp nav__comp--notebook">
+  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+    <use href="#sf-notebook"/>
+  </svg>
+  <span>Science</span>
+</a>
+```
+
+```css
+.nav__links .nav__comp {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 999px;
+  font-weight: 600; font-size: 0.88rem;
+  text-decoration: none; transition: background 0.2s;
+}
+.nav__comp--notebook { color: #8B5230; }
+.nav__comp--advisor  { color: #2D5A38; }
+.nav__comp--compass  { color: #7A5808; opacity: 0.55; pointer-events: none; }  /* coming soon */
+.nav__comp:hover     { background: rgba(0,0,0,0.06); border-radius: 999px; }
+```
+
+Nav also gets canvas texture as background-image with soft-light blend.
+
+#### 6D — SVG Vine Border (hero philosophy)
+
+Replace the straight `border-left` with an organic vine `::before` pseudo-element.
+
+```css
+.hero__philosophy { position: relative; padding-left: 24px; }
+.hero__philosophy::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: auto;
+  width: 18px; height: 900px;
+  background-image: url("data:image/svg+xml, [vine SVG with 8px wavy stem + 6 tendrils] ");
+  background-size: 18px 900px;
+}
+```
+
+The vine extends 900px (tall enough to reach the wave divider). The `.hero { overflow: hidden }` clips it cleanly at the hero boundary, so it appears to grow into the wave below.
+
+---
 
 ### 🚧 Phase 7: Organic Data Visualization
-- [ ] Sun path as flower petal diagram
-- [ ] Energy flow as root/sap system
-- [ ] Monthly yield as tree rings
-- [ ] Heatmaps with organic contours
+- [ ] Sun path as flower petal diagram (Solar Advisor)
+- [ ] Energy flow as root/sap system (Solar Advisor)
+- [ ] Monthly yield as tree rings (Solar Advisor)
+- [ ] Heatmaps with organic contours (Solar Advisor)
 
 ### ✅ Phase 8: Storytelling Layouts (COMPLETE in v1.2)
 - [x] Timeline: sun's journey through the day
 - [x] Before/After: transformation comparisons
 - [x] Garden layout: grouped content as garden beds
 - [x] Field guide: annotated botanical illustrations
+
+### 🚧 Phase 9: Cross-Page Design Consistency
+- [ ] Apply design system (nav pills, icon sprite, textures) to article.html
+- [ ] Apply design system to solar-advisor.html
+- [ ] Apply design system to resources.html (new page)
+- [ ] Ensure all emoji are replaced with SVG clay mark icons
 
 ---
 

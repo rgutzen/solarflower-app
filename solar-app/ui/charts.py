@@ -393,6 +393,231 @@ def _doy_to_mmdd(doy: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Phase 7: Organic Data Visualization
+# ---------------------------------------------------------------------------
+
+def sun_path_flower(lat: float, lon: float, elevation_m: float, selected_doy: int | None = None) -> go.Figure:
+    """Sun path as filled flower petals — each season is a filled polar arc.
+
+    Winter = blue petal (narrow arc, low in sky), equinox = sage (mid arc),
+    summer = amber (broad arc sweeping high). Together they form a flower.
+    """
+    import datetime
+
+    loc = pvlib.location.Location(lat, lon, altitude=elevation_m, tz="UTC")
+
+    petals = [
+        ("Winter solstice (Dec 21)", 355, "rgba(45,125,210,0.22)",  BLUE_COLOR),
+        ("Equinox (Mar 20)",          79, "rgba(107,143,113,0.28)", "#6B8F71"),
+        ("Summer solstice (Jun 21)", 172, "rgba(245,166,35,0.28)",  SUN_COLOR),
+    ]
+    if selected_doy is not None:
+        petals.append(("Selected day", selected_doy, "rgba(199,91,57,0.20)", TERRACOTTA))
+
+    fig = go.Figure()
+
+    for label, doy, fillcolor, linecolor in petals:
+        date = datetime.date(2023, 1, 1) + datetime.timedelta(days=doy - 1)
+        times = pd.date_range(
+            datetime.datetime(2023, date.month, date.day, 0, 0),
+            periods=145, freq="10min", tz="UTC",
+        )
+        sp  = loc.get_solarposition(times)
+        alt = (90 - sp["apparent_zenith"].clip(upper=90)).clip(lower=0)
+        az  = sp["azimuth"]
+        mask = alt > 0
+        if mask.sum() < 2:
+            continue
+        # r = zenith distance: 0 = directly overhead, 90 = horizon
+        fig.add_trace(go.Scatterpolar(
+            r=(90 - alt[mask]).values,
+            theta=az[mask].values,
+            fill="toself",
+            fillcolor=fillcolor,
+            line=dict(color=linecolor, width=2),
+            name=label,
+            mode="lines",
+        ))
+
+    fig.update_layout(
+        title="Sun's journey across the sky — each season is a petal",
+        polar=dict(
+            angularaxis=dict(
+                tickmode="array",
+                tickvals=[0, 45, 90, 135, 180, 225, 270, 315],
+                ticktext=["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+                direction="clockwise",
+                rotation=90,
+            ),
+            radialaxis=dict(
+                tickmode="array",
+                tickvals=[0, 15, 30, 45, 60, 75, 90],
+                ticktext=["90°", "75°", "60°", "45°", "30°", "15°", "0°"],
+                range=[0, 90],
+            ),
+        ),
+        height=440,
+        margin=dict(l=40, r=40, t=60, b=60),
+        legend=dict(orientation="h", y=-0.12),
+    )
+    return fig
+
+
+def monthly_rose(monthly_yield: pd.Series) -> go.Figure:
+    """Monthly yield as a polar rose — each month is a petal, radius = avg kWh/day.
+
+    Color follows the seasonal rhythm: clay (winter) → sage (spring/autumn) → amber (summer).
+    """
+    month_colors = [
+        CLAY,       CLAY,        # Jan, Feb  — winter
+        "#8FBD8F",  "#8FBD8F",   # Mar, Apr  — early spring
+        SUN_COLOR,  SUN_COLOR,   # May, Jun  — early summer
+        SUN_COLOR,  OCHRE,       # Jul, Aug  — peak / late summer
+        TERRACOTTA, TERRACOTTA,  # Sep, Oct  — autumn
+        CLAY,       CLAY,        # Nov, Dec  — winter
+    ]
+
+    fig = go.Figure()
+    for i, (label, val, color) in enumerate(
+        zip(MONTH_LABELS, monthly_yield.values, month_colors)
+    ):
+        fig.add_trace(go.Barpolar(
+            r=[float(val)],
+            theta=[i * 30],
+            width=[26],
+            marker_color=color,
+            marker_line_color="white",
+            marker_line_width=1.5,
+            opacity=0.88,
+            name=label,
+            showlegend=True,
+        ))
+
+    fig.update_layout(
+        title="A year of sunlight — monthly average yield",
+        polar=dict(
+            angularaxis=dict(
+                tickmode="array",
+                tickvals=[i * 30 for i in range(12)],
+                ticktext=MONTH_LABELS,
+                direction="clockwise",
+                rotation=90,
+            ),
+            radialaxis=dict(title_text="kWh/day", showticklabels=True),
+        ),
+        showlegend=False,
+        height=420,
+        margin=dict(l=60, r=60, t=60, b=60),
+    )
+    return fig
+
+
+def energy_roots(waterfall: dict[str, float], net_kwh: float) -> go.Figure:
+    """Energy flow as a root / sap Sankey diagram.
+
+    The amber trunk is gross solar input; terracotta branches are each loss;
+    the green root is net AC yield reaching the ground.
+    """
+    friendly = {_WATERFALL_LABELS.get(k, k): v for k, v in waterfall.items()}
+    loss_labels = list(friendly.keys())
+    losses      = list(friendly.values())
+    gross       = net_kwh + sum(losses)
+
+    # Nodes: 0 = gross, 1..N = losses, N+1 = net
+    node_labels = ["Gross solar input"] + loss_labels + ["Net AC yield"]
+    n = len(losses)
+
+    node_colors = [SUN_COLOR] + [TERRACOTTA] * n + ["#28C840"]
+    link_colors = ["rgba(199,91,57,0.22)"] * n + ["rgba(245,166,35,0.35)"]
+
+    fig = go.Figure(go.Sankey(
+        arrangement="snap",
+        node=dict(
+            pad=14,
+            thickness=18,
+            line=dict(color="rgba(0,0,0,0.08)", width=0.5),
+            label=node_labels,
+            color=node_colors,
+        ),
+        link=dict(
+            source=[0] * (n + 1),
+            target=list(range(1, n + 2)),
+            value=losses + [net_kwh],
+            color=link_colors,
+        ),
+    ))
+    fig.update_layout(
+        title=f"Energy flow — {gross:,.0f} kWh gross → {net_kwh:,.0f} kWh net",
+        height=440,
+        margin=dict(l=20, r=20, t=60, b=20),
+        font=dict(size=11),
+    )
+    return fig
+
+
+def orientation_contour(
+    energy_grid: np.ndarray,
+    tilt_arr: np.ndarray,
+    az_arr: np.ndarray,
+    selected_tilt: float,
+    selected_az: float,
+) -> tuple[go.Figure, float, float, float]:
+    """Smooth contour map of annual yield vs tilt × azimuth.
+
+    Organic alternative to the rigid heatmap grid — contour lines follow the
+    yield topology like elevation contours on a landscape.
+    """
+    opt_i, opt_j = np.unravel_index(np.argmax(energy_grid), energy_grid.shape)
+    opt_tilt = tilt_arr[opt_i]
+    opt_az   = az_arr[opt_j]
+    opt_val  = energy_grid[opt_i, opt_j]
+
+    fig = go.Figure(go.Contour(
+        z=energy_grid,
+        x=az_arr,
+        y=tilt_arr,
+        colorscale=[
+            [0.00, "#F1F8E9"],  # green-pale
+            [0.40, "#FFF3DC"],  # amber-light
+            [0.75, "#F5A623"],  # amber
+            [1.00, "#9A6207"],  # amber-dark
+        ],
+        contours=dict(
+            coloring="heatmap",
+            showlabels=True,
+            labelfont=dict(size=10, color="rgba(27,46,27,0.65)"),
+        ),
+        colorbar=dict(title="kWh/yr"),
+        hovertemplate="Tilt: %{y}°<br>Azimuth: %{x}°<br>Yield: %{z:.0f} kWh<extra></extra>",
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[opt_az], y=[opt_tilt], mode="markers+text",
+        marker=dict(symbol="star", size=16, color="white",
+                    line=dict(color=SUN_COLOR, width=2)),
+        text=[f"Best: {opt_val:.0f} kWh"],
+        textposition="top center",
+        name="Optimal",
+    ))
+    fig.add_trace(go.Scatter(
+        x=[selected_az], y=[selected_tilt], mode="markers",
+        marker=dict(symbol="cross", size=14, color=BLUE_COLOR,
+                    line=dict(color="white", width=1.5)),
+        name="Selected",
+    ))
+
+    fig.update_layout(
+        title=f"Annual yield by orientation — best: tilt {opt_tilt}°, facing {opt_az}° → {opt_val:,.0f} kWh/yr",
+        xaxis_title="Facing direction [°]  (0° = North · 90° = East · 180° = South · 270° = West)",
+        yaxis_title="Tilt angle [°]  (0° = flat · 90° = vertical)",
+        height=420,
+        margin=dict(l=60, r=20, t=60, b=50),
+        legend=dict(orientation="h", y=1.1),
+    )
+    return fig, float(opt_tilt), float(opt_az), float(opt_val)
+
+
+# ---------------------------------------------------------------------------
 # Plan 05: Lifetime Yield Projection
 # ---------------------------------------------------------------------------
 

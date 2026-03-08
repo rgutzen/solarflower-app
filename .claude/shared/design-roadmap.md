@@ -14,51 +14,28 @@
 | Phase 4 | Biophilic animations (bloom, breathe, grow) | Complete (v1.1) |
 | Overhaul | Organic buttons, canvas card textures, floating seeds, vine nav, storytelling layouts | Complete (v1.2) |
 | Phase 5 | Typography: Lora serif + Caveat handwritten | Complete (v1.3) |
-| Phase 6 | Iconography: illustrated botanical / organic line icons | Planned |
-| Phase 7 | Organic data visualization (flower sun path, root energy flow, tree rings) | Planned |
+| Phase 6 | Clay mark icon system, arc panel design, nav pills, vine border, texture overhaul | **Complete (v1.4)** |
+| Phase 7 | Organic data visualization (flower sun path, root energy flow, tree rings) | In Progress |
+| Phase 8 | Article page design system application | In Progress |
+| Phase 9 | Cross-page consistency (solar-advisor.html, resources.html) | Planned |
 
 ---
 
-## Phase 6: Iconography Evolution
+## ✅ Phase 6: Clay Mark Icon System + Arc Panel Design (Complete v1.4)
 
-Replace geometric glyphs with illustrated botanical/solarpunk icons.
+**Chosen approach:** Single-path closed forms with SVG clay filter (not illustrated, not outline-stroke) — each icon is one continuous filled shape pressed like a clay stamp.
 
-**Style options:**
-- **Option A — Illustrated:** small drawings within each icon (sun with petal rays, panel cells as seeds)
-- **Option B — Organic line:** wobbly lines with round end-caps, variable stroke width
+**Delivered:**
+- Clay filter (`sf-clay`) with fractalNoise displacement + grain multiply
+- 5 icons: `sf-notebook`, `sf-advisor`, `sf-compass`, `sf-sun`, `sf-location`
+- Arc panel design: three tilted sectors (soil/moss/gold), two-color per panel, full-panel link
+- Navigation redesigned as component pills (icon + label, colored per component)
+- SVG vine border on hero philosophy text, extending to wave divider
+- Panel textures strengthened 3× (soil 0.38, moss 0.32, gold 0.28)
 
-**Key icons to redesign:**
+**Files changed:** `website/index.html`, `website/styles.css`, `website/assets/icons.svg`
 
-| Icon | Solarpunk version |
-|------|------------------|
-| Sun | Flower with petal rays, warm glow |
-| Panel | Rectangle with cell-seed pattern |
-| Compass | Flower compass (N petal) |
-| Location | House with growing garden |
-| Settings | Gear with vine growing through |
-| Chart | Root system branching |
-| Download | Seed dropping into soil |
-| Upload | Flower blooming upward |
-| Menu | Three leaves |
-
-**Implementation:** SVG sprite system at `website/assets/icons.svg`, referenced via `<use href="...#id">`.
-
-```css
-.icon {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-  stroke-width: 1.8;
-}
-@keyframes wobble {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(2deg); }
-  75% { transform: rotate(-2deg); }
-}
-.icon--living:hover { animation: wobble 2s ease-in-out infinite; }
-```
-
-**Files:** `website/assets/icons.svg` (new), `website/styles.css`, `website/index.html`.
+See `design-guidelines.md` §9 Phase 6 for full implementation detail.
 
 ---
 
@@ -97,6 +74,42 @@ fig.add_trace(go.Scatterpolar(
 
 ---
 
+---
+
+## 🚧 Phase 8: Article Page Design System
+
+Apply the v1.4 design system to `article.html` / `article.css`.
+
+**Changes:**
+- [x] Nav: replace text links with component pills + icon sprite (same as `index.html`)
+- [x] Add inline SVG sprite to article.html
+- [x] Add organic wave divider at bottom of article-hero
+- [x] Replace emoji icons in "Explore Further" cards with clay mark SVG icons
+- [x] Add canvas texture to article-hero background
+- [ ] Review callout and equation styling for organic feel
+
+**Files:** `website/article.html`, `website/article.css`
+
+---
+
+## 🚧 Phase 9: Cross-Page Consistency
+
+Apply design system to remaining pages.
+
+**solar-advisor.html:**
+- [ ] Nav: component pills (same structure)
+- [ ] Add icon sprite
+- [ ] Consistent header/hero styling
+
+**resources.html (new page):**
+- [ ] Create resources landing page with consistent design
+- [ ] Nav: component pills
+- [ ] Apply clay aesthetic to resource cards
+
+**Files:** `website/solar-advisor.html`, `website/resources.html`
+
+---
+
 ## Detailed Implementation Notes
 
 Full implementation detail (CSS snippets, HTML templates, Python code):
@@ -105,16 +118,19 @@ Full implementation detail (CSS snippets, HTML templates, Python code):
 
 ---
 
-## File Change Summary (Phases 6–7)
+## File Change Summary (Phases 6–9)
 
 | File | Changes |
 |------|---------|
-| `website/assets/icons.svg` | New — SVG icon sprite sheet |
-| `website/styles.css` | Icon utility classes, wobble animation |
-| `website/index.html` | Replace icons with new system |
-| `solar-app/ui/charts.py` | Add `plot_sun_path_flower()`, `plot_energy_roots()`, `plot_monthly_tree_rings()` |
-| `solar-app/app.py` | Chart-style toggle (standard / organic) |
-| `notebook/solar_panel_power.ipynb` | Add organic visualizations |
+| `website/assets/icons.svg` | Clay mark icons (5 symbols + clay filter) |
+| `website/styles.css` | Arc panels, nav pills, vine border, texture overhaul |
+| `website/index.html` | Inline sprite, arc panels, component nav |
+| `website/article.html` | Component nav, inline sprite, wave divider, SVG icons |
+| `website/article.css` | Canvas texture, wave divider, icon sizing |
+| `website/solar-advisor.html` | Component nav, inline sprite (Phase 9) |
+| `website/resources.html` | New page (Phase 9) |
+| `solar-app/ui/charts.py` | `plot_sun_path_flower()`, `plot_energy_roots()`, `plot_monthly_tree_rings()` (Phase 7) |
+| `solar-app/app.py` | Chart-style toggle (Phase 7) |
 
 ---
 

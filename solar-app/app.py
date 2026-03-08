@@ -211,12 +211,12 @@ with tab1:
     col_wf, col_monthly = st.columns([1, 1])
     with col_wf:
         st.plotly_chart(
-            charts.loss_waterfall(result.loss_waterfall, result.annual_yield_kwh),
+            charts.energy_roots(result.loss_waterfall, result.annual_yield_kwh),
             use_container_width=True,
         )
     with col_monthly:
         st.plotly_chart(
-            charts.monthly_summary(result.monthly_yield_kwh_day, result.monthly_pr),
+            charts.monthly_rose(result.monthly_yield_kwh_day),
             use_container_width=True,
         )
 
@@ -349,7 +349,7 @@ with tab2:
         )
 
     if energy_grid is not None:
-        fig_hm, opt_tilt, opt_az, opt_kwh = charts.orientation_heatmap(
+        fig_hm, opt_tilt, opt_az, opt_kwh = charts.orientation_contour(
             energy_grid, tilt_arr, az_arr, cfg["tilt_deg"], cfg["panel_az_deg"]
         )
         st.plotly_chart(fig_hm, use_container_width=True)
@@ -477,7 +477,7 @@ with tab5:
         ),
     )
     st.plotly_chart(
-        charts.sun_path_polar(cfg["lat"], cfg["lon"], cfg["elevation_m"], doy_sp),
+        charts.sun_path_flower(cfg["lat"], cfg["lon"], cfg["elevation_m"], doy_sp),
         use_container_width=True,
     )
 
