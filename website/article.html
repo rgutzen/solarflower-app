@@ -89,6 +89,7 @@
         <li><a href="#step-8" class="toc__link">Annual Energy Yield</a></li>
         <li><a href="#step-9" class="toc__link toc__link--interactive">Interactive Explorer</a></li>
         <li><a href="#summary" class="toc__link">Summary</a></li>
+        <li><a href="#explore-further" class="toc__link">Explore Further</a></li>
       </ol>
     </nav>
   </aside>
@@ -166,6 +167,15 @@
 
         <!-- Chart: Inverse-square law -->
         <div class="article__chart" id="chart-inverse-square" aria-label="Interactive chart showing irradiance vs distance from the Sun"></div>
+
+        <div class="article__callout article__callout--deepdive">
+          <strong>Dig Deeper — The Sun:</strong>
+          <ul>
+            <li><a href="https://science.nasa.gov/sun/" target="_blank" rel="noopener noreferrer">NASA: Our Sun</a> — real-time imagery and data from NASA's Solar Dynamics Observatory, including solar flares, the solar wind, and the 11-year activity cycle</li>
+            <li><a href="https://en.wikipedia.org/wiki/Proton%E2%80%93proton_chain_reaction" target="_blank" rel="noopener noreferrer">Proton–proton chain reaction (Wikipedia)</a> — a step-by-step breakdown of the nuclear fusion reactions that convert hydrogen into helium and energy in the Sun's core</li>
+            <li><a href="https://en.wikipedia.org/wiki/Solar_irradiance" target="_blank" rel="noopener noreferrer">Solar Irradiance (Wikipedia)</a> — history of Solar Constant measurements, satellite data, and how we separate the "constant" from the solar cycle variations</li>
+          </ul>
+        </div>
       </section>
 
       <!-- ================================================================ -->
@@ -326,6 +336,16 @@
 
         <!-- Chart: Air mass and DNI -->
         <div class="article__chart" id="chart-atmosphere" aria-label="Interactive chart showing atmospheric effects on irradiance"></div>
+
+        <div class="article__callout article__callout--deepdive">
+          <strong>Dig Deeper — Climate &amp; Solar Resources:</strong>
+          <ul>
+            <li><a href="https://re.jrc.ec.europa.eu/pvg_tools/en/" target="_blank" rel="noopener noreferrer">PVGIS (EU Joint Research Centre)</a> — free satellite-derived solar irradiance data for any location in Europe, Africa, Asia, and the Americas; built from 20+ years of SARAH-3 and ERA5 meteorological records — the same data used by the Solar Advisor app</li>
+            <li><a href="https://nsrdb.nrel.gov/" target="_blank" rel="noopener noreferrer">NREL NSRDB</a> — the U.S. National Solar Radiation Database; 30+ years of half-hourly solar resource data at 4 km resolution, free to download</li>
+            <li><a href="https://solargis.com/maps-and-gis-data/download/world" target="_blank" rel="noopener noreferrer">SolarGIS Global Solar Resource Maps</a> — free downloadable irradiance and photovoltaic power potential maps by country and region</li>
+            <li><a href="https://en.wikipedia.org/wiki/Air_mass_(solar_energy)" target="_blank" rel="noopener noreferrer">Air Mass in solar energy (Wikipedia)</a> — a deeper treatment of atmospheric path length, the Kasten–Young formula, and how airmass affects the solar spectrum (AM0, AM1, AM1.5)</li>
+          </ul>
+        </div>
       </section>
 
       <!-- ================================================================ -->
@@ -373,7 +393,11 @@
         <h2>From Irradiance to Electrical Power</h2>
         <h3>Panel efficiency and temperature derating</h3>
 
-        <p>We now know how much sunlight reaches the panel surface. The final step is converting photons into electrons — and that conversion is never 100% efficient.</p>
+        <p>We now know how much sunlight reaches the panel surface. The final step is converting photons into electrons. But before we reach for equations, it's worth pausing to ask: <em>how does a solar panel actually turn light into electricity?</em></p>
+
+        <p>The answer lies in the <strong>photovoltaic effect</strong>, first observed by Edmond Becquerel in 1839. When a photon with sufficient energy strikes a silicon atom, it can knock a loosely-bound electron free from the crystal lattice — a quantum-mechanical process described by Einstein's explanation of the photoelectric effect (which won him the Nobel Prize in 1921, not relativity). On its own, this liberates electrons at random. The key engineering insight is to build a <strong>p–n junction</strong>: a boundary between silicon doped with electron donors (n-type) and silicon doped with electron acceptors (p-type). This junction creates a built-in electric field that sweeps freed electrons in one direction — and that directed flow <em>is</em> electrical current.</p>
+
+        <p>This is fundamentally different from <strong>solar thermal</strong> collectors, which absorb sunlight as heat to warm water or air (or, in concentrated solar power plants, to drive a steam turbine). PV panels skip the heat step entirely: photons become electrons directly. That distinction matters in two ways. First, a cold, bright winter day can be just as productive for PV as a warm summer one — what drives output is light intensity, not temperature. Second, cell heating actually <em>hurts</em> PV efficiency, as we'll see below.</p>
 
         <p><strong>1. Panel area and efficiency:</strong></p>
         <div class="article__equation">
@@ -400,6 +424,16 @@
 
         <!-- Chart: Power output -->
         <div class="article__chart" id="chart-power" aria-label="Interactive chart showing daily power output with and without temperature correction"></div>
+
+        <div class="article__callout article__callout--deepdive">
+          <strong>Dig Deeper — Photovoltaic Physics &amp; Technology:</strong>
+          <ul>
+            <li><a href="https://www.pveducation.org/" target="_blank" rel="noopener noreferrer">PV Education (pveducation.org)</a> — a comprehensive free online textbook on solar cell physics, from semiconductor fundamentals and p–n junction theory to full system design; the best single resource for going deeper on PV science</li>
+            <li><a href="https://www.nrel.gov/pv/cell-efficiency.html" target="_blank" rel="noopener noreferrer">NREL Best Research-Cell Efficiency Chart</a> — the definitive, continuously-updated chart tracking efficiency world records across all PV technologies (silicon, perovskite, III-V, organic, and more)</li>
+            <li><a href="https://en.wikipedia.org/wiki/Solar_thermal_collector" target="_blank" rel="noopener noreferrer">Solar Thermal Collectors (Wikipedia)</a> — how solar thermal heating works, the difference between flat-plate and evacuated-tube collectors, and when thermal beats PV on economics</li>
+            <li><a href="https://en.wikipedia.org/wiki/Concentrated_solar_power" target="_blank" rel="noopener noreferrer">Concentrated Solar Power (Wikipedia)</a> — large-scale solar thermal electricity via mirrors and steam turbines: a fundamentally different route from photons to the grid</li>
+          </ul>
+        </div>
       </section>
 
       <!-- ================================================================ -->
@@ -576,6 +610,85 @@
         <p>The physics you've learned here is the foundation that all of these refinements rest on. Understanding the first principles means you can read a professional yield report and know <em>exactly</em> what each number means.</p>
 
         <p class="article__coda"><em>Derived from first principles: nuclear physics → orbital mechanics → spherical trigonometry → atmospheric optics → semiconductor physics.</em></p>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- EXPLORE FURTHER                                                  -->
+      <!-- ================================================================ -->
+      <section class="article__section article__section--further" id="explore-further" data-reveal>
+        <h2>Explore Further</h2>
+        <h3>A curated map of resources to go deeper on each part of the story</h3>
+
+        <p>The arc from sunlight to kilowatt-hours spans nuclear physics, atmospheric science, semiconductor engineering, and electricity infrastructure. Each domain is a rich field in its own right. Here are the best entry points for readers who want to go further.</p>
+
+        <div class="article__further-grid">
+
+          <div class="article__further-card">
+            <div class="article__further-card-icon" aria-hidden="true">&#9728;</div>
+            <h4>Solar Physics &amp; Astronomy</h4>
+            <p>The Sun as a star — nuclear fusion, the solar spectrum, the 11-year activity cycle, and why the "Solar Constant" isn't quite constant over geological time.</p>
+            <ul>
+              <li><a href="https://science.nasa.gov/sun/" target="_blank" rel="noopener noreferrer">NASA: Our Sun</a> — live imagery and data from the Solar Dynamics Observatory</li>
+              <li><a href="https://en.wikipedia.org/wiki/Proton%E2%80%93proton_chain_reaction" target="_blank" rel="noopener noreferrer">Proton–proton chain (Wikipedia)</a> — step-by-step nuclear fusion reactions</li>
+              <li><a href="https://en.wikipedia.org/wiki/Solar_irradiance" target="_blank" rel="noopener noreferrer">Solar Irradiance (Wikipedia)</a> — measurement history and satellite data</li>
+            </ul>
+          </div>
+
+          <div class="article__further-card">
+            <div class="article__further-card-icon" aria-hidden="true">&#9928;</div>
+            <h4>Climate &amp; Solar Resources</h4>
+            <p>How clouds, aerosols, humidity, and regional climate patterns shape how much sunlight actually reaches a panel. Tools for finding real irradiance data anywhere on Earth.</p>
+            <ul>
+              <li><a href="https://re.jrc.ec.europa.eu/pvg_tools/en/" target="_blank" rel="noopener noreferrer">PVGIS Tool (EU JRC)</a> — free solar irradiance data for Europe, Africa &amp; Americas</li>
+              <li><a href="https://nsrdb.nrel.gov/" target="_blank" rel="noopener noreferrer">NREL NSRDB</a> — U.S. 30-year solar radiation database</li>
+              <li><a href="https://solargis.com/maps-and-gis-data/download/world" target="_blank" rel="noopener noreferrer">SolarGIS World Maps</a> — global solar resource maps by country</li>
+            </ul>
+          </div>
+
+          <div class="article__further-card">
+            <div class="article__further-card-icon" aria-hidden="true">&#9889;</div>
+            <h4>Photovoltaic Physics &amp; Technology</h4>
+            <p>From the quantum mechanics of the photovoltaic effect to silicon crystal growth, cell architectures (mono-Si, poly-Si, thin-film, perovskite), and the theoretical efficiency limits (Shockley–Queisser).</p>
+            <ul>
+              <li><a href="https://www.pveducation.org/" target="_blank" rel="noopener noreferrer">PV Education (pveducation.org)</a> — the definitive free online PV textbook</li>
+              <li><a href="https://www.nrel.gov/pv/cell-efficiency.html" target="_blank" rel="noopener noreferrer">NREL Efficiency Chart</a> — all-time world records by technology</li>
+              <li><a href="https://en.wikipedia.org/wiki/Shockley%E2%80%93Queisser_limit" target="_blank" rel="noopener noreferrer">Shockley–Queisser Limit (Wikipedia)</a> — why ~33% is the theoretical ceiling for a single-junction cell</li>
+            </ul>
+          </div>
+
+          <div class="article__further-card">
+            <div class="article__further-card-icon" aria-hidden="true">&#9827;</div>
+            <h4>Solar Thermal &amp; Concentrated Solar Power</h4>
+            <p>The alternative path: using sunlight as <em>heat</em> rather than light. From domestic hot water collectors to gigawatt-scale power towers that store energy as molten salt.</p>
+            <ul>
+              <li><a href="https://en.wikipedia.org/wiki/Solar_thermal_collector" target="_blank" rel="noopener noreferrer">Solar Thermal Collectors (Wikipedia)</a> — flat-plate vs evacuated-tube; when thermal beats PV</li>
+              <li><a href="https://en.wikipedia.org/wiki/Concentrated_solar_power" target="_blank" rel="noopener noreferrer">Concentrated Solar Power (Wikipedia)</a> — parabolic troughs, power towers, and thermal storage</li>
+              <li><a href="https://www.iea.org/energy-system/renewables/solar-thermal" target="_blank" rel="noopener noreferrer">IEA: Solar Thermal</a> — global capacity, trends, and outlook</li>
+            </ul>
+          </div>
+
+          <div class="article__further-card">
+            <div class="article__further-card-icon" aria-hidden="true">&#128268;</div>
+            <h4>Electricity Grids &amp; Infrastructure</h4>
+            <p>How electricity from a rooftop panel joins a grid built for centralised power stations. The challenges of variable renewables, the role of storage, net metering, and what the global energy transition actually requires.</p>
+            <ul>
+              <li><a href="https://www.iea.org/energy-system/renewables/solar-pv" target="_blank" rel="noopener noreferrer">IEA: Solar PV</a> — global deployment data, cost trends, and policy outlook</li>
+              <li><a href="https://www.irena.org/Solar" target="_blank" rel="noopener noreferrer">IRENA Solar</a> — renewable energy statistics and country profiles</li>
+              <li><a href="https://en.wikipedia.org/wiki/Smart_grid" target="_blank" rel="noopener noreferrer">Smart Grids (Wikipedia)</a> — demand flexibility, distributed generation, and grid modernisation</li>
+            </ul>
+          </div>
+
+          <div class="article__further-card article__further-card--highlight">
+            <div class="article__further-card-icon" aria-hidden="true">&#127803;</div>
+            <h4>Put It Into Practice</h4>
+            <p>The physics above is the foundation. The <strong>Solarflower Solar Advisor</strong> builds on it with real weather data, 15,000+ panel and inverter models, and a full loss chain — to give you professional-grade annual yield estimates for any location.</p>
+            <ul>
+              <li><a href="solar-advisor.html">Open the Solar Advisor &#8594;</a></li>
+              <li><a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer">Explore the open-source code on GitHub</a></li>
+            </ul>
+          </div>
+
+        </div>
       </section>
 
     </div><!-- /.article__container -->

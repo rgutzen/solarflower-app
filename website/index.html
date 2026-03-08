@@ -17,9 +17,59 @@
   <meta property="og:url" content="https://github.com/rgutzen/solarflower-app">
 
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  
+  <!-- Typography: Lora (serif) + Caveat (handwritten) - Phase 5 -->
+  <!-- For privacy: download WOFF2 from https://fonts.google.com and serve locally -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- Inline SVG icon sprite — raw organic mark language -->
+  <!-- Canonical source: assets/icons.svg -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <!-- NOTEBOOK: pressed-clay form with geological strata marks — amber -->
+    <symbol id="sf-notebook" viewBox="0 0 48 48">
+      <path d="M13,9 C10,9 9,11 9,13 L9,37 C9,39 11,41 13,41"
+            fill="none" stroke="#D4A03A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+      <path d="M11,15 C10,10 13,7 17,7 L34,8 C37,8 40,10 40,14 L39,37 C39,41 36,43 33,43 L12,42 C9,42 7,40 8,36 Z"
+            fill="#FFF3DC" stroke="#F5A623" stroke-width="1.5"/>
+      <path d="M15,19 C21,18 28,19 37,18" fill="none" stroke="#F5A623" stroke-width="2" stroke-linecap="round"/>
+      <path d="M15,27 C20,26 27,27 36,26" fill="none" stroke="#D4A03A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <path d="M15,35 C21,34 27,35 35,34" fill="none" stroke="#9A7128" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+      <path d="M33,9 L39,15" stroke="#F5A623" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+    </symbol>
+    <!-- ADVISOR: asymmetric faceted heptagon / mineral cross-section — blue -->
+    <symbol id="sf-advisor" viewBox="0 0 48 48">
+      <path d="M24,5 L41,14 L44,30 L34,44 L14,44 L5,30 L8,14 Z"
+            fill="#E8F1FB" stroke="#2D7DD2" stroke-width="1.5"/>
+      <path d="M24,5 L41,14 L24,21 Z" fill="#2D7DD2" opacity="0.22"/>
+      <path d="M24,21 L41,14 L44,30 Z" fill="#1B5FA0" opacity="0.16"/>
+      <path d="M24,21 L44,30 L34,44 Z" fill="#2D7DD2" opacity="0.12"/>
+      <path d="M24,21 L34,44 L14,44 Z" fill="#1B5FA0" opacity="0.08"/>
+      <path d="M24,21 L14,44 L5,30 Z" fill="#2D7DD2" opacity="0.12"/>
+      <path d="M24,21 L5,30 L8,14 Z" fill="#1B5FA0" opacity="0.16"/>
+      <path d="M24,21 L8,14 L24,5 Z" fill="#2D7DD2" opacity="0.1"/>
+      <line x1="24" y1="21" x2="41" y2="14" stroke="#2D7DD2" stroke-width="0.8" opacity="0.35"/>
+      <line x1="24" y1="21" x2="44" y2="30" stroke="#2D7DD2" stroke-width="0.8" opacity="0.3"/>
+      <line x1="24" y1="21" x2="34" y2="44" stroke="#2D7DD2" stroke-width="0.8" opacity="0.25"/>
+      <line x1="24" y1="21" x2="14" y2="44" stroke="#2D7DD2" stroke-width="0.8" opacity="0.25"/>
+      <line x1="24" y1="21" x2="5"  y2="30" stroke="#2D7DD2" stroke-width="0.8" opacity="0.3"/>
+      <line x1="24" y1="21" x2="8"  y2="14" stroke="#2D7DD2" stroke-width="0.8" opacity="0.35"/>
+      <line x1="24" y1="21" x2="24" y2="5"  stroke="#2D7DD2" stroke-width="0.8" opacity="0.4"/>
+    </symbol>
+    <!-- COMPASS: organic ellipse ring with bold directional wedge — sage / ink -->
+    <symbol id="sf-compass" viewBox="0 0 48 48">
+      <ellipse cx="24" cy="24" rx="19" ry="18" fill="#F5F6F5" stroke="#8FBD8F" stroke-width="2"/>
+      <ellipse cx="24" cy="24" rx="13" ry="12" fill="none" stroke="#8FBD8F" stroke-width="0.8" opacity="0.3"/>
+      <path d="M24,7 L30,23 L24,20 L18,23 Z" fill="#1B2E1B" opacity="0.72"/>
+      <path d="M24,41 L30,25 L24,28 L18,25 Z" fill="#8FBD8F" opacity="0.5"/>
+      <circle cx="24" cy="24" r="2.5" fill="#3D5240" opacity="0.6"/>
+    </symbol>
+  </svg>
 
   <!-- ================================================================== -->
   <!-- NAVIGATION                                                         -->
@@ -32,6 +82,7 @@
       </a>
       <ul class="nav__links" role="list">
         <li><a href="#components">Components</a></li>
+        <li><a href="#garden">Garden</a></li>
         <li><a href="#open-source">Open Source</a></li>
         <li><a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer" class="nav__github" aria-label="View on GitHub">
           <!-- Inline GitHub icon -->
@@ -49,12 +100,25 @@
     <div class="hero__organic" aria-hidden="true">
       <svg class="hero__blob hero__blob--1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <path d="M44.7,-76.4C58.8,-69.2,71.8,-58.1,79.6,-44.2C87.4,-30.3,90,-13.6,88.2,2.4C86.4,18.4,80.2,33.6,70.3,45.7C60.4,57.8,46.8,66.7,32.4,73.5C18,80.3,2.8,85,-12.6,83.9C-28,82.8,-43.6,75.9,-56.2,65.3C-68.8,54.7,-78.4,40.4,-83.4,24.5C-88.4,8.6,-88.8,-8.9,-83.5,-24.1C-78.2,-39.3,-67.2,-52.2,-53.7,-59.7C-40.2,-67.2,-24.2,-69.3,-8.4,-73.2C7.4,-77.1,14.8,-82.8,27.4,-82.3C40,-81.8,57.8,-75,44.7,-76.4Z" transform="translate(100 100)" fill="url(#blobGrad1)"/>
-        <defs><linearGradient id="blobGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F5A623" stop-opacity="0.06"/><stop offset="100%" stop-color="#66BB6A" stop-opacity="0.04"/></linearGradient></defs>
+        <defs><linearGradient id="blobGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F5A623" stop-opacity="0.08"/><stop offset="100%" stop-color="#66BB6A" stop-opacity="0.05"/></linearGradient></defs>
       </svg>
       <svg class="hero__blob hero__blob--2" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <path d="M39.9,-65.7C53.4,-60.5,67.1,-52.6,74.2,-40.8C81.3,-29,81.8,-13.3,79.3,1.5C76.8,16.3,71.3,30.1,62.5,41.2C53.7,52.3,41.6,60.7,28.4,66.3C15.2,71.9,0.9,74.7,-13.4,73.3C-27.7,71.9,-42,66.3,-53.2,57C-64.4,47.7,-72.5,34.7,-77,20.2C-81.5,5.7,-82.4,-10.3,-77.4,-24C-72.4,-37.7,-61.5,-49.1,-48.5,-54.6C-35.5,-60.1,-20.5,-59.7,-6.4,-62.2C7.7,-64.7,15.4,-70,26.4,-70.9C37.4,-71.8,51.6,-68.3,39.9,-65.7Z" transform="translate(100 100)" fill="url(#blobGrad2)"/>
-        <defs><linearGradient id="blobGrad2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2D7DD2" stop-opacity="0.05"/><stop offset="100%" stop-color="#66BB6A" stop-opacity="0.03"/></linearGradient></defs>
+        <defs><linearGradient id="blobGrad2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2D7DD2" stop-opacity="0.06"/><stop offset="100%" stop-color="#66BB6A" stop-opacity="0.04"/></linearGradient></defs>
       </svg>
+      <svg class="hero__blob hero__blob--3" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,-70C65,-60,78,-45,85,-28C92,-11,92,8,85,25C78,42,65,55,48,65C31,75,10,80,-10,78C-30,76,-48,68,-62,55C-76,42,-85,25,-88,5C-91,-15,-88,-38,-78,-58C-68,-78,-52,-95,-32,-105C-12,-115,12,-118,35,-112C58,-106,80,-92,50,-70Z" transform="translate(100 100)" fill="url(#blobGrad3)"/>
+        <defs><linearGradient id="blobGrad3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#C75B39" stop-opacity="0.04"/><stop offset="100%" stop-color="#D4A03A" stop-opacity="0.03"/></linearGradient></defs>
+      </svg>
+    </div>
+
+    <!-- Floating seed particles -->
+    <div class="hero__seeds" aria-hidden="true">
+      <div class="hero__seed"></div>
+      <div class="hero__seed"></div>
+      <div class="hero__seed"></div>
+      <div class="hero__seed"></div>
+      <div class="hero__seed"></div>
     </div>
 
     <div class="hero__inner container">
@@ -72,10 +136,12 @@
           <a href="https://github.com/rgutzen/solarflower-app" target="_blank" rel="noopener noreferrer" class="btn btn--outline">View on GitHub</a>
         </div>
         <p class="hero__philosophy">
-          Solar energy is more than clean electricity — it is a path toward independence.
+          Solar energy is more than clean electricity, it is a path toward independence.
+          <br>
           Every rooftop panel shifts power from centralized infrastructure back to individuals
-          and communities. Solarflower exists to put the knowledge, tools, and confidence
-          for that transition into everyone's hands — openly, transparently, and for&nbsp;free.
+          and communities. 
+            <br> <strong><em>Solarflower</em></strong> exists to put the knowledge, tools, and confidence
+          for that transition into everyone's hands - openly, transparently, accessibly.
         </p>
       </div>
     </div>
@@ -116,13 +182,8 @@
           <!-- Card 1: Notebook -->
           <article class="card card--notebook bloom" data-reveal>
             <div class="card__icon" aria-hidden="true">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="8" y="4" width="28" height="40" rx="3" stroke="#F5A623" stroke-width="2.5" fill="#FFF8E7"/>
-                <line x1="14" y1="14" x2="30" y2="14" stroke="#F5A623" stroke-width="2" stroke-linecap="round"/>
-                <line x1="14" y1="20" x2="28" y2="20" stroke="#E8920E" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-                <line x1="14" y1="26" x2="26" y2="26" stroke="#E8920E" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-                <circle cx="36" cy="36" r="10" fill="#F5A623" opacity="0.15"/>
-                <text x="32" y="40" font-size="14" font-weight="bold" fill="#F5A623" font-family="system-ui">∑</text>
+              <svg class="card__icon-svg" width="52" height="52" viewBox="0 0 48 48">
+                <use href="#sf-notebook"/>
               </svg>
             </div>
             <div class="card__badge">Educational</div>
@@ -138,16 +199,8 @@
           <!-- Card 2: Web App -->
           <article class="card card--app bloom" data-reveal>
             <div class="card__icon" aria-hidden="true">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="8" width="36" height="28" rx="3" stroke="#2D7DD2" stroke-width="2.5" fill="#E8F1FB"/>
-                <line x1="6" y1="14" x2="42" y2="14" stroke="#2D7DD2" stroke-width="1.5" opacity="0.4"/>
-                <circle cx="10" cy="11" r="1.2" fill="#F5A623"/>
-                <circle cx="14" cy="11" r="1.2" fill="#66BB6A"/>
-                <circle cx="18" cy="11" r="1.2" fill="#2D7DD2"/>
-                <rect x="10" y="18" width="14" height="3" rx="1" fill="#2D7DD2" opacity="0.25"/>
-                <rect x="10" y="23" width="10" height="3" rx="1" fill="#F5A623" opacity="0.35"/>
-                <rect x="10" y="28" width="12" height="3" rx="1" fill="#2D7DD2" opacity="0.15"/>
-                <polyline points="28,30 32,24 36,27 40,18" stroke="#F5A623" stroke-width="2" stroke-linecap="round" fill="none"/>
+              <svg class="card__icon-svg" width="52" height="52" viewBox="0 0 48 48">
+                <use href="#sf-advisor"/>
               </svg>
             </div>
             <div class="card__badge card__badge--blue">Professional</div>
@@ -168,15 +221,8 @@
           <!-- Card 3: Mobile App -->
           <article class="card card--mobile bloom" data-reveal>
             <div class="card__icon" aria-hidden="true">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="14" y="4" width="20" height="40" rx="4" stroke="#78909C" stroke-width="2.5" fill="#F5F5F5"/>
-                <line x1="14" y1="12" x2="34" y2="12" stroke="#78909C" stroke-width="1" opacity="0.3"/>
-                <line x1="14" y1="36" x2="34" y2="36" stroke="#78909C" stroke-width="1" opacity="0.3"/>
-                <circle cx="24" cy="40" r="1.5" fill="#78909C" opacity="0.5"/>
-                <!-- Compass needle -->
-                <circle cx="24" cy="24" r="8" stroke="#F5A623" stroke-width="1.5" fill="none" opacity="0.5"/>
-                <polygon points="24,17 22,25 24,23 26,25" fill="#E63946" opacity="0.7"/>
-                <polygon points="24,31 22,25 24,23 26,25" fill="#78909C" opacity="0.5"/>
+              <svg class="card__icon-svg" width="52" height="52" viewBox="0 0 48 48">
+                <use href="#sf-compass"/>
               </svg>
             </div>
             <div class="card__badge card__badge--grey">Coming Soon</div>
@@ -189,6 +235,34 @@
           </article>
 
         </div><!-- /.cards -->
+      </div>
+    </section>
+
+    <!-- ---- Solar Garden: Storytelling Layout ---- -->
+    <section class="garden" id="garden">
+      <div class="container">
+        <h2 class="garden__title">Your Solar Garden</h2>
+        <p class="section-lead" style="text-align: center; max-width: 600px; margin: 0 auto var(--sp-10);">
+          Like a garden, your solar setup grows from seeds to harvest.
+          Each tool nurtures a different stage of your solar journey.
+        </p>
+
+        <div class="garden__bed">
+          <article class="garden__plot garden__plot--seeds">
+            <h3>Seeds</h3>
+            <p><strong>Knowledge</strong><br>Plant the understanding of solar physics with our educational notebook.</p>
+          </article>
+
+          <article class="garden__plot garden__plot--growing">
+            <h3>Growing</h3>
+            <p><strong>Planning</strong><br>Cultivate your project with professional simulation tools.</p>
+          </article>
+
+          <article class="garden__plot garden__plot--bloom">
+            <h3>Harvest</h3>
+            <p><strong>Installation</strong><br>Deploy with confidence using on-site orientation guidance.</p>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -235,6 +309,55 @@
             </svg>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ---- Field Guide: Annotated Diagram ---- -->
+    <section class="field-guide">
+      <div class="container">
+        <h2 class="field-guide__title">The Solar Flower</h2>
+        
+        <svg class="field-guide__diagram" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+          <!-- Sun/flower center -->
+          <circle cx="200" cy="80" r="35" fill="#F5A623" opacity="0.9"/>
+          <circle cx="200" cy="80" r="45" fill="none" stroke="#F5A623" stroke-width="2" opacity="0.3" stroke-dasharray="4,4"/>
+          
+          <!-- Petal rays -->
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(0 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(45 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(90 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(135 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(180 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(225 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(270 200 80)"/>
+          <ellipse cx="200" cy="30" rx="8" ry="20" fill="#F5A623" opacity="0.6" transform="rotate(315 200 80)"/>
+          
+          <!-- Stem -->
+          <path d="M200,115 Q190,160 200,200 Q210,160 200,115" fill="#4CAF50" opacity="0.8"/>
+          <path d="M200,130 L170,120 M200,150 L230,145 M200,175 L175,185" stroke="#4CAF50" stroke-width="2" fill="none" opacity="0.6"/>
+          
+          <!-- Ground line -->
+          <ellipse cx="200" cy="210" rx="60" ry="8" fill="#A67B5B" opacity="0.3"/>
+          
+          <!-- Annotations -->
+          <g class="field-guide__annotation">
+            <line x1="200" y1="45" x2="200" y2="20"/>
+            <text x="200" y="12" text-anchor="middle" font-size="11">① Petals: PV Modules</text>
+          </g>
+          <g class="field-guide__annotation">
+            <line x1="245" y1="80" x2="280" y2="80"/>
+            <text x="290" y="85" font-size="11">② Center: Inverter</text>
+          </g>
+          <g class="field-guide__annotation">
+            <line x1="200" y1="150" x2="200" y2="190"/>
+            <text x="200" y="210" text-anchor="middle" font-size="11">③ Roots: Electrical Grid</text>
+          </g>
+        </svg>
+        
+        <blockquote class="field-guide__quote">
+          "Like a flower tracking the sun, your panel follows the light — 
+          turning every ray into energy, every dawn into possibility."
+        </blockquote>
       </div>
     </section>
 

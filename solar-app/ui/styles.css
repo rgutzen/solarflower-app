@@ -21,6 +21,7 @@
   --sf-sage:        #8FBD8F;
   --sf-ink:         #1B2E1B;
   --sf-ink-light:   #3D5240;
+  --sf-success:     #22C55E;
 
   /* Extended: Earth & Dusk (Phase 1) */
   --sf-terracotta:  #C75B39;
@@ -41,29 +42,31 @@ h1, h2, h3 {
   color: var(--sf-ink);
 }
 
-/* Primary button - amber */
+/* Primary button - amber, organic pottery shape */
 .stButton > button[kind="primary"] {
   background-color: var(--sf-amber) !important;
   color: var(--sf-ink) !important;
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 30px 70px 40px 60px / 60px 40px 70px 30px !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease !important;
+  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .stButton > button[kind="primary"]:hover {
   background-color: var(--sf-amber-dark) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(245, 166, 35, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(245, 166, 35, 0.35) !important;
   transform: translateY(-1px) !important;
 }
 
-/* Secondary button - blue */
+/* Secondary button - blue, leaf shape */
 .stButton > button[kind="secondary"] {
   background-color: var(--sf-blue-dark) !important;
   color: #ffffff !important;
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 20px 0px 20px 0px !important;
 }
 
 /* Card/box styling for metrics */
@@ -128,14 +131,18 @@ streamlit-expander {
   animation: breathe-gentle 4s ease-in-out infinite;
 }
 
-/* Smooth transitions throughout */
-* {
-  transition: all 0.2s ease;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   [data-testid="stMetric"] {
     padding: 12px;
+  }
+}
+
+/* Motion sensitivity (Section 4.4) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
