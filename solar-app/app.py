@@ -212,12 +212,12 @@ with tab1:
     with col_wf:
         st.plotly_chart(
             charts.energy_roots(result.loss_waterfall, result.annual_yield_kwh),
-            use_container_width=True,
+            width="stretch",
         )
     with col_monthly:
         st.plotly_chart(
             charts.monthly_rose(result.monthly_yield_kwh_day),
-            use_container_width=True,
+            width="stretch",
         )
 
     with st.expander("Loss Budget Detail"):
@@ -261,7 +261,7 @@ with tab1:
             "Avg annual yield",
             f"{total_kwh / lt_years:,.0f} kWh/yr",
         )
-        st.plotly_chart(charts.lifetime_yield_chart(lt_yield), use_container_width=True)
+        st.plotly_chart(charts.lifetime_yield_chart(lt_yield), width="stretch")
 
     with st.expander("Download Results"):
         import json
@@ -352,13 +352,13 @@ with tab2:
         fig_hm, opt_tilt, opt_az, opt_kwh = charts.orientation_contour(
             energy_grid, tilt_arr, az_arr, cfg["tilt_deg"], cfg["panel_az_deg"]
         )
-        st.plotly_chart(fig_hm, use_container_width=True)
+        st.plotly_chart(fig_hm, width="stretch")
 
         col_a, col_b = st.columns(2)
         with col_a:
             st.plotly_chart(
                 charts.yield_vs_tilt(energy_grid, tilt_arr, az_arr, cfg["panel_az_deg"], cfg["tilt_deg"]),
-                use_container_width=True,
+                width="stretch",
             )
         with col_b:
             delta = opt_kwh - result.annual_yield_kwh
@@ -414,7 +414,7 @@ with tab3:
 
     st.plotly_chart(
         charts.monthly_summary(result.monthly_yield_kwh_day, result.monthly_pr, monthly_opt),
-        use_container_width=True,
+        width="stretch",
     )
 
     monthly_df = pd.DataFrame({
@@ -453,7 +453,7 @@ with tab4:
             tmy_df, cfg["lat"], cfg["lon"], cfg["elevation_m"],
             cfg["tilt_deg"], cfg["panel_az_deg"], cfg["albedo"], doy,
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
 # ---- Tab 5: Sun Path ------------------------------------------------------
@@ -478,7 +478,7 @@ with tab5:
     )
     st.plotly_chart(
         charts.sun_path_flower(cfg["lat"], cfg["lon"], cfg["elevation_m"], doy_sp),
-        use_container_width=True,
+        width="stretch",
     )
 
     hz_az  = cfg.get("horizon_azimuths", (0, 45, 90, 135, 180, 225, 270, 315))
@@ -488,7 +488,7 @@ with tab5:
             charts.horizon_profile_chart(
                 cfg["lat"], cfg["lon"], cfg["elevation_m"], hz_az, hz_el,
             ),
-            use_container_width=True,
+            width="stretch",
         )
 
 # ---- Tab 6: Economics -----------------------------------------------------
@@ -521,10 +521,10 @@ with tab6:
         kpi_cols[4].metric("LCOE", f"€{econ.lcoe_eur_kwh:.3f}/kWh",
                            help="Levelised cost of energy — compare with your grid tariff.")
 
-        st.plotly_chart(charts.cashflow_chart(econ), use_container_width=True)
+        st.plotly_chart(charts.cashflow_chart(econ), width="stretch")
 
         with st.expander("Annual yield over lifetime"):
-            st.plotly_chart(charts.yield_degradation_chart(econ), use_container_width=True)
+            st.plotly_chart(charts.yield_degradation_chart(econ), width="stretch")
 
         with st.expander("Assumptions"):
             st.dataframe(pd.DataFrame({
