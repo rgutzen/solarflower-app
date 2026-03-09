@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2025 Robin Gutzen <robin.gutzen@outlook.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# ── Traditional search-engine crawlers ──
+User-agent: *
+Allow: /
+Sitemap: https://robingutzen.com/solarflower/sitemap.xml
+
+# ── AI crawlers: allow retrieval / citation bots ──
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# ── AI crawlers: block training-only scrapers ──
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /

@@ -51,6 +51,14 @@ solar-app/cache/
 .DS_Store
 Thumbs.db
 
+# Node
+node_modules/
+
+# Coverage / test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Secrets / credentials
 .env.local
 secrets.toml
