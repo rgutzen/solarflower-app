@@ -856,6 +856,9 @@
       elev:   document.getElementById("slider-elev"),
       area:   document.getElementById("slider-area"),
       eff:    document.getElementById("slider-eff"),
+      doy:    document.getElementById("slider-doy"),
+      ptilt:  document.getElementById("slider-ptilt"),
+      paz:    document.getElementById("slider-paz"),
     };
 
     const values = {
@@ -863,7 +866,24 @@
       elev:   document.getElementById("val-elev"),
       area:   document.getElementById("val-area"),
       eff:    document.getElementById("val-eff"),
+      doy:    document.getElementById("val-doy"),
+      ptilt:  document.getElementById("val-ptilt"),
+      paz:    document.getElementById("val-paz"),
     };
+
+    // Human-readable day label for the DOY slider
+    const DOY_LABELS = { 1: "Jan 1", 32: "Feb 1", 60: "Mar 1", 91: "Apr 1",
+      121: "May 1", 152: "Jun 1", 172: "Jun 21 ☀", 182: "Jul 1", 213: "Aug 1",
+      244: "Sep 1", 274: "Oct 1", 305: "Nov 1", 335: "Dec 1", 355: "Dec 21 ❄", 365: "Dec 31" };
+    function doyLabel(d) {
+      const date = new Date(2024, 0, d);
+      return `${d} (${date.toLocaleDateString("en", {month:"short", day:"numeric"})})`;
+    }
+    const COMPASS = { 0:"N", 45:"NE", 90:"E", 135:"SE", 180:"S", 225:"SW", 270:"W", 315:"NW", 360:"N" };
+    function pazLabel(az) {
+      const dir = COMPASS[Math.round(az/45)*45] || "";
+      return `${az}°${dir ? " (" + dir + ")" : ""}`;
+    }
 
     if (!sliders.lat) return;
 
@@ -872,6 +892,9 @@
       values.elev.textContent   = sliders.elev.value + " m";
       values.area.textContent   = sliders.area.value + " m²";
       values.eff.textContent    = sliders.eff.value + "%";
+      if (values.doy)   values.doy.textContent   = doyLabel(parseInt(sliders.doy.value));
+      if (values.ptilt) values.ptilt.textContent = sliders.ptilt.value + "°";
+      if (values.paz)   values.paz.textContent   = pazLabel(parseInt(sliders.paz.value));
     }
 
     function runExplorer() {
@@ -880,6 +903,9 @@
       const areaM2      = parseFloat(sliders.area.value);
       const efficiency  = parseFloat(sliders.eff.value) / 100;
       const albedo      = 0.20;  // fixed ground reflectivity
+      const doy         = sliders.doy   ? parseInt(sliders.doy.value)   : 172;
+      const panelTilt   = sliders.ptilt ? parseFloat(sliders.ptilt.value) : 35;
+      const panelAz     = sliders.paz   ? parseFloat(sliders.paz.value)   : 180;
 
       // Coarse grid for speed
       const tiltC = Array.from(arange(0, 91, 10));
@@ -902,16 +928,23 @@
       const eFlat = eFlatSum / azC.length;
       const gain = ((maxE - eFlat) / eFlat * 100);
 
-      // Update stat cards
-      const statTilt   = document.getElementById("stat-opt-tilt");
-      const statAz     = document.getElementById("stat-opt-az");
-      const statAnnual = document.getElementById("stat-annual");
-      const statGain   = document.getElementById("stat-gain");
+      // Yield at the manually chosen orientation (nearest grid point)
+      const iM = tiltC.reduce((bi, v, i) => Math.abs(v - panelTilt) < Math.abs(tiltC[bi] - panelTilt) ? i : bi, 0);
+      const jM = azC.reduce((bi, v, j) => Math.abs(v - panelAz) < Math.abs(azC[bi] - panelAz) ? j : bi, 0);
+      const eManual = result.energy[iM * azC.length + jM];
 
-      if (statTilt)   statTilt.textContent   = tiltC[optI] + "°";
-      if (statAz)     statAz.textContent     = azC[optJ] + "°";
-      if (statAnnual) statAnnual.textContent = maxE.toFixed(0) + " kWh";
-      if (statGain)   statGain.textContent   = "+" + gain.toFixed(1) + "%";
+      // Update stat cards
+      const statTilt      = document.getElementById("stat-opt-tilt");
+      const statAz        = document.getElementById("stat-opt-az");
+      const statAnnual    = document.getElementById("stat-annual");
+      const statYourYield = document.getElementById("stat-your-yield");
+      const statGain      = document.getElementById("stat-gain");
+
+      if (statTilt)      statTilt.textContent      = tiltC[optI] + "°";
+      if (statAz)        statAz.textContent        = azC[optJ] + "°";
+      if (statAnnual)    statAnnual.textContent    = maxE.toFixed(0) + " kWh";
+      if (statYourYield) statYourYield.textContent = eManual.toFixed(0) + " kWh";
+      if (statGain)      statGain.textContent      = "+" + gain.toFixed(1) + "%";
 
       // --- Heatmap ---
       const heatmapEl = document.getElementById("chart-explorer-heatmap");
@@ -932,16 +965,24 @@
           colorbar: { title: "kWh", titleside: "right", tickfont: { family: '"Inter", sans-serif', size: 13 } },
           hovertemplate: "Tilt: %{y}°, Az: %{x}° → %{z:.0f} kWh<extra></extra>",
         }, {
+          // Optimal marker (star)
           x: [azC[optJ]], y: [tiltC[optI]],
-          mode: "markers",
+          mode: "markers", name: "Optimal",
           marker: { symbol: "star", size: 18, color: "#fff", line: { color: INK_COLOR, width: 1.5 } },
-          showlegend: false,
-          hoverinfo: "skip",
+          hovertemplate: `Optimal: ${tiltC[optI]}° tilt, ${azC[optJ]}° az → ${maxE.toFixed(0)} kWh<extra></extra>`,
+        }, {
+          // Your choice marker (X)
+          x: [panelAz], y: [panelTilt],
+          mode: "markers", name: "Your choice",
+          marker: { symbol: "x", size: 14, color: "#5B8DC4", line: { color: "#fff", width: 1.5 } },
+          hovertemplate: `Your choice: ${panelTilt}° tilt, ${panelAz}° az → ${eManual.toFixed(0)} kWh<extra></extra>`,
         }], {
           ...LAYOUT_BASE,
           title: { text: `<b>Annual Yield — lat=${latDeg}°, ${areaM2} m², ${(efficiency*100).toFixed(0)}%</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
           xaxis: { title: "Azimuth [° from N]", tickvals: [0, 90, 180, 270, 360], ticktext: ["N", "E", "S", "W", "N"], gridcolor: "rgba(74,96,80,0.08)" },
           yaxis: { title: "Tilt [°]", gridcolor: "rgba(74,96,80,0.08)" },
+          showlegend: true,
+          legend: { x: 0.01, y: 0.99, bgcolor: "rgba(254,253,245,0.85)", font: { size: 11 } },
         }, PLOTLY_CONFIG);
       }
 
@@ -969,6 +1010,12 @@
           name: `Horizontal: ${eFlat.toFixed(0)} kWh`,
           line: { color: GREY_COLOR, width: 1.5, dash: "dot" },
           hoverinfo: "skip",
+        }, {
+          // Your chosen tilt
+          x: [panelTilt], y: [eManual],
+          mode: "markers", name: "Your tilt",
+          marker: { symbol: "circle", size: 11, color: "#5B8DC4", line: { color: "#fff", width: 1.5 } },
+          hovertemplate: `Your tilt: ${panelTilt}° → ${eManual.toFixed(0)} kWh<extra></extra>`,
         }], {
           ...LAYOUT_BASE,
           title: { text: `<b>Yield vs Tilt (gain: +${gain.toFixed(1)}%)</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
@@ -998,6 +1045,64 @@
           title: { text: `<b>Monthly Profile — ${total.toFixed(0)} kWh/yr</b>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
           yaxis: { title: "Avg. daily yield [kWh/day]", gridcolor: "rgba(74,96,80,0.1)" },
           margin: { t: 55, r: 20, b: 80, l: 65 },
+        }, PLOTLY_CONFIG);
+      }
+
+      // --- Daily sun path (polar, for chosen DOY) ---
+      const sunpathEl = document.getElementById("chart-explorer-sunpath");
+      if (sunpathEl) {
+        const hours = Array.from({length: 289}, (_, i) => i * (24 / 288));
+        const azSun = [], elSun = [];
+        for (const h of hours) {
+          const sp = solarAltitudeAzimuth(doy, h, latDeg, 0);
+          const altDeg = rad2deg(sp.altitude);
+          const azDeg  = rad2deg(sp.azimuth);
+          if (altDeg > 0) { azSun.push(azDeg); elSun.push(90 - altDeg); }
+        }
+        const date = new Date(2024, 0, doy);
+        const dateStr = date.toLocaleDateString("en", {month: "long", day: "numeric"});
+
+        Plotly.react(sunpathEl, [{
+          // Sun path arc
+          type: "scatterpolar",
+          r: elSun, theta: azSun,
+          mode: "lines",
+          name: "Sun path",
+          line: { color: SUN_COLOR, width: 3 },
+          hovertemplate: "Az: %{theta}°, Alt: %{r:.0f}° above horizon<extra></extra>",
+        }, {
+          // Panel azimuth direction spoke
+          type: "scatterpolar",
+          r: [0, 90], theta: [panelAz, panelAz],
+          mode: "lines", name: "Panel facing",
+          line: { color: "#5B8DC4", width: 2, dash: "dash" },
+          hoverinfo: "skip",
+        }], {
+          ...LAYOUT_BASE,
+          title: { text: `<b>Sun Path — ${dateStr} (day ${doy}), lat=${latDeg}°</b><br><span style="font-size:13px;font-weight:normal">Dashed blue line = panel facing direction (${panelAz}°)</span>`, font: { family: '"Lora", Georgia, serif', size: 16, color: INK_COLOR } },
+          polar: {
+            bgcolor: "rgba(232,245,233,0.30)",
+            angularaxis: {
+              tickmode: "array",
+              tickvals: [0, 45, 90, 135, 180, 225, 270, 315],
+              ticktext: ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
+              direction: "clockwise", rotation: 90,
+              tickfont: { size: 13, color: INK_COLOR },
+              gridcolor: "rgba(74,96,80,0.12)",
+            },
+            radialaxis: {
+              tickmode: "array",
+              tickvals: [20, 40, 60, 80],
+              ticktext: ["70°", "50°", "30°", "10°"],
+              range: [0, 90],
+              tickfont: { size: 11, color: INK_COLOR },
+              gridcolor: "rgba(74,96,80,0.12)",
+            },
+          },
+          showlegend: true,
+          legend: { x: 0.5, y: -0.05, xanchor: "center", orientation: "h" },
+          margin: { t: 80, r: 30, b: 60, l: 30 },
+          height: 450,
         }, PLOTLY_CONFIG);
       }
     }

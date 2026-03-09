@@ -604,6 +604,27 @@
                 <output for="slider-eff" class="explorer__value" id="val-eff">20%</output>
               </div>
             </div>
+            <div class="explorer__slider-group">
+              <label for="slider-doy">Day of year</label>
+              <div class="explorer__slider-row">
+                <input type="range" id="slider-doy" min="1" max="365" value="172" step="1" class="explorer__range">
+                <output for="slider-doy" class="explorer__value" id="val-doy">172 (Jun 21)</output>
+              </div>
+            </div>
+            <div class="explorer__slider-group">
+              <label for="slider-ptilt">Your panel tilt</label>
+              <div class="explorer__slider-row">
+                <input type="range" id="slider-ptilt" min="0" max="90" value="35" step="5" class="explorer__range">
+                <output for="slider-ptilt" class="explorer__value" id="val-ptilt">35°</output>
+              </div>
+            </div>
+            <div class="explorer__slider-group">
+              <label for="slider-paz">Your azimuth</label>
+              <div class="explorer__slider-row">
+                <input type="range" id="slider-paz" min="0" max="360" value="180" step="10" class="explorer__range">
+                <output for="slider-paz" class="explorer__value" id="val-paz">180° (S)</output>
+              </div>
+            </div>
           </div>
 
           <div class="explorer__results" id="explorer-results">
@@ -617,7 +638,11 @@
             </div>
             <div class="explorer__stat explorer__stat--highlight">
               <span class="explorer__stat-value" id="stat-annual">—</span>
-              <span class="explorer__stat-label">Annual yield</span>
+              <span class="explorer__stat-label">Optimal yield</span>
+            </div>
+            <div class="explorer__stat">
+              <span class="explorer__stat-value" id="stat-your-yield">—</span>
+              <span class="explorer__stat-label">Your choice yield</span>
             </div>
             <div class="explorer__stat">
               <span class="explorer__stat-value" id="stat-gain">—</span>
@@ -631,6 +656,7 @@
               <div class="article__chart article__chart--half" id="chart-explorer-tilt" aria-label="Explorer tilt sweep chart"></div>
               <div class="article__chart article__chart--half" id="chart-explorer-monthly" aria-label="Explorer monthly chart"></div>
             </div>
+            <div class="article__chart" id="chart-explorer-sunpath" aria-label="Daily sun path for chosen day"></div>
           </div>
         </div>
       </section>

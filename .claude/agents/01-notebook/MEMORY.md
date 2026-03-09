@@ -44,14 +44,17 @@ compute_monthly_energy(...) → monthly avg kWh/day
 - **Dependencies:** numpy, pandas, matplotlib, plotly, ipywidgets (all in app-dev env)
 - **Standalone:** No dependency on `solar-app/` at runtime
 
-## Known Gaps (see also `tasks/backlog.md`)
+## Session 2 Changes (2026-03-09) — 23 cells total
 
-- [ ] No interactive widgets (ipywidgets) for live parameter exploration
-- [ ] No section on cell temperature and its effect on yield
-- [ ] No section on real-world losses (soiling, LID, mismatch, inverter)
-- [ ] No comparison: clear-sky model vs PVGIS TMY real data
-- [ ] No forward reference / link to Solar Advisor web-app
-- [ ] No Southern hemisphere example (show azimuth flip to North)
+- **Cell [19] expanded**: interactive dashboard now has 8 sliders:
+  lat, elevation, area, efficiency, albedo (existing) + **DOY, panel_tilt, panel_azimuth** (new)
+  4-panel layout: heatmap (⭐ optimal + ✕ your choice) / tilt sweep / monthly / **daily sun path polar**
+- **Cell [20] new**: Cape Town (33.9°S) vs Berlin (52.5°N) side-by-side heatmaps — azimuth flip demo
+- **Cell [22] new**: Solar Advisor forward link + notebook vs Solar Advisor model comparison table
+
+## Remaining Gaps
+
+- [ ] No quantitative comparison: clear-sky yield numbers vs PVGIS TMY (only a conceptual note)
 
 ## Sanity Check Values
 

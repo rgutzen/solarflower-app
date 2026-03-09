@@ -4,36 +4,49 @@ Plans are ordered by impact-to-effort ratio. Each has a dedicated file with full
 
 ## Plan Index
 
-| # | Plan | Priority | Effort | Blocks |
-|---|------|----------|--------|--------|
-| [01](./01-vectorize-orientation-grid.md) | Vectorize orientation grid sweep | H | S | — |
-| [02](./02-economic-analysis.md) | Economic analysis tab | H | M | — |
-| [03](./03-rest-api.md) | REST API for mobile integration | H | M | mobile-app |
-| [04](./04-shading-model.md) | Horizon shading input | M | M | — |
-| [05](./05-degradation-projection.md) | 20-year degradation projection | M | S | — |
+| # | Plan | Status | Effort | Notes |
+|---|------|--------|--------|-------|
+| [01](./01-vectorize-orientation-grid.md) | Vectorize orientation grid sweep | ✅ Done | S | NumPy broadcast, ~5 s |
+| [02](./02-economic-analysis.md) | Economic analysis tab | ✅ Done | M | IRR, NPV, LCOE, cashflow chart |
+| [03](./03-rest-api.md) | REST API for mobile integration | 🔲 Pending | M | CORS configured; needs hosting |
+| [04](./04-shading-model.md) | Horizon shading physics | ✅ Done | M | Sigmoid mask in run_simulation + orientation grid |
+| [05](./05-degradation-projection.md) | 20-year degradation projection | ✅ Done | S | `core/degradation.py` + lifetime chart |
+| [06](./06-sensitivity-and-shading.md) | Sensitivity tornado + shading in grid | ✅ Done | M | `compute_sensitivity()`, `sensitivity_tornado()`, horizon in grid |
 
 **Effort key:** S = small (½–1 day), M = medium (1–2 days)
 
 ---
 
-## Current App State (as of 2026-03)
+## Current App State (as of 2026-03, session 2)
 
-Five tabs: Annual Summary, Orientation Optimizer, Monthly Breakdown, Daily Irradiance, Sun Path.
+**Six tabs:** Annual Summary · Orientation Optimizer · Monthly Breakdown · Daily Irradiance · Sun Path · Economics
 
-Core modules:
-- `core/climate.py` — PVGIS TMY fetch with Open-Meteo + clear-sky fallback
+**Core modules:**
+- `core/climate.py` — PVGIS TMY → Open-Meteo → clear-sky fallback
 - `core/system.py` — CEC/Sandia DB, PVsyst .pan/.ond parser, parametric module builder
-- `core/energy.py` — full PVsyst-equivalent hourly simulation; nested-loop orientation grid
+- `core/energy.py` — full PVsyst-equivalent hourly sim; vectorized orientation grid; `compute_sensitivity()`
 - `core/losses.py` — LossBudget dataclass, IAM, DC/AC loss chain, waterfall builder
-- `ui/sidebar.py` — system configuration sidebar
-- `ui/charts.py` — Plotly charts (waterfall, monthly, heatmap, sun path, daily irradiance)
+- `core/economics.py` — NPV, IRR, LCOE, payback; `EconResult`
+- `core/degradation.py` — linear degradation projection
+- `ui/sidebar.py` — system configuration sidebar (includes horizon profile input)
+- `ui/charts.py` — 15 Plotly chart builders (all using organic LAYOUT_BASE design system)
 
-Known issues / gaps addressed by these plans:
-1. Orientation grid sweep takes ~10 min (nested Python loop) — **Plan 01**
-2. No economic output (only yield, no cost/payback) — **Plan 02**
-3. No machine-readable API for mobile integration — **Plan 03**
-4. No near-shading / horizon input — **Plan 04**
-5. No multi-year yield projection — **Plan 05**
+**Annual Summary tab expanders:**
+1. Loss Budget Detail (table)
+2. **Sensitivity Analysis** — What Moves Your Yield? (tornado chart — new)
+3. Lifetime Yield Projection (bar + cumulative line)
+4. Download Results (CSV + JSON)
+
+**Horizon shading:** UI input → sigmoid mask in `run_simulation()` → also applied in `compute_orientation_grid()` ✅
+
+---
+
+## Next Priorities
+
+| # | Task | Agent | Priority |
+|---|------|-------|----------|
+| REST API | Deploy `api/` to Railway/Render | 03+04 | H (unblocks mobile) |
+| Deploy | Streamlit Community Cloud | 03 | L |
 
 ---
 

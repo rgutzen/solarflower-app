@@ -7,9 +7,6 @@ Format: `- [ ] [agent:0X] [priority:H/M/L] Description`
 
 ## Agent 02 — Website
 
-- [ ] [agent:02] [priority:H] Deploy website to GitHub Pages
-  - Enable GitHub Pages in repo settings (branch: main, folder: /website or root)
-  - Verify all links work (mobile-app symlink, iframe embed)
 - [ ] [agent:02] [priority:M] Create `resources.html` page (Phase 9)
   - Nav: component pills
   - Resource cards with clay aesthetic (links to pvlib docs, PVGIS, PVWatts, etc.)
@@ -31,29 +28,21 @@ Format: `- [ ] [agent:0X] [priority:H/M/L] Description`
 
 ## Agent 01 — Notebook
 
-- [ ] [agent:01] [priority:H] Add ipywidgets interactive controls for solar path
-  - Sliders for lat/lon/doy → live sun path plot update
-- [ ] [agent:01] [priority:H] Add section: Cell Temperature and its effect on yield
-  - Derive NOCT model: T_cell = T_air + (NOCT − 20) × G_T/800
-  - Show power loss curve vs temperature
-- [ ] [agent:01] [priority:M] Add section: Real-World Losses (brief, conceptual)
-  - Soiling, LID, mismatch, wiring, inverter — show loss chain
-  - Note: for full loss budget see Solar Advisor web-app
-- [ ] [agent:01] [priority:M] Add Southern hemisphere example
-  - Cape Town (33.9°S) → show optimal azimuth flips to North (~0°)
-- [ ] [agent:01] [priority:L] Add forward reference section at end
-  - "For professional-grade calculations see Solar Advisor" with link
-  - Brief comparison: clear-sky model vs PVGIS TMY
+- [ ] [agent:01] [priority:H] Expand interactive dashboard (cell [19])
+  - Add DOY slider (1–365) → daily sun path panel for chosen day
+  - Add panel_tilt slider (0–90°) and panel_azimuth slider (0–360°) → manual orientation marker on heatmap
+  - Reuses existing `compute_annual_grid()`, `solar_altitude_azimuth()`, `compute_monthly_energy()`
+- [ ] [agent:01] [priority:M] Cape Town side-by-side heatmap
+  - Compute optimal tilt/azimuth for Berlin (52.5°N) and Cape Town (33.9°S)
+  - Show two heatmaps side-by-side with annotated optimal points
+- [ ] [agent:01] [priority:L] Solar Advisor forward link (final markdown cell)
+  - "For professional-grade calculations see Solar Advisor" with URL
+  - Brief comparison table: notebook clear-sky model vs Solar Advisor PVGIS TMY
 
 ---
 
 ## Agent 03 — Web-App
 
-- [ ] [agent:03] [priority:M] Vectorize physics in `compute_orientation_grid()` further
-  - Current: numpy-vectorized transposition, still loops over tilt/az (cached, ~5 s)
-  - Future: full numpy broadcasting over tilt × az × time → single batch call
-- [ ] [agent:03] [priority:L] Full horizon shading physics
-  - Horizon profile UI already exists; wire up physics to block beam when sun below horizon
 - [ ] [agent:03] [priority:L] Deploy Solar Advisor to Streamlit Community Cloud
   - See `solar-app/docs/deployment.md` for instructions
 

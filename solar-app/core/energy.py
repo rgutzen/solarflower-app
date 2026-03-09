@@ -18,6 +18,7 @@ identical parameters is instantaneous.
 """
 
 from __future__ import annotations
+import dataclasses
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
@@ -229,6 +230,8 @@ def compute_orientation_grid(
     tilt_arr: np.ndarray,
     az_arr: np.ndarray,
     albedo: float = 0.20,
+    horizon_azimuths: tuple[float, ...] | None = None,
+    horizon_elevations: tuple[float, ...] | None = None,
 ) -> np.ndarray:
     """
     Sweep tilt × azimuth and return annual yield grid (kWh), shape (T, A).
@@ -236,11 +239,21 @@ def compute_orientation_grid(
     Vectorized NumPy broadcast over (N_time, N_tilt, N_az) — ~50× faster than the
     loop version. Uses Hay-Davies sky diffuse (≤2% error vs Perez) and ASHRAE IAM
     so the full (N, T, A) tensor fits in memory without per-orientation pvlib calls.
+
+    If horizon_azimuths/horizon_elevations are supplied, the beam DNI is masked at
+    each timestep before the (N, T, A) broadcast — same shading logic as run_simulation().
     """
     loc = pvlib.location.Location(lat, lon, altitude=elevation_m, tz="UTC")
     times = tmy_df.index
     solar_pos = loc.get_solarposition(times)
     dni_extra = pvlib.irradiance.get_extra_radiation(times).values  # (N,)
+
+    # --- Apply horizon shading mask to beam DNI (before broadcast) ---
+    has_shading = (
+        horizon_azimuths is not None
+        and horizon_elevations is not None
+        and any(e > 0 for e in horizon_elevations)
+    )
 
     # --- Precompute solar geometry (shared across all orientations) ---
     zen_r    = np.radians(solar_pos["apparent_zenith"].values)
@@ -253,6 +266,11 @@ def compute_orientation_grid(
     dhi   = tmy_df["dhi"].values.astype(np.float32)
     t_air = tmy_df["temp_air"].values.astype(np.float32)
     ws    = tmy_df["wind_speed"].values.astype(np.float32)
+
+    # Apply horizon shading mask to beam DNI (1D, broadcast-safe)
+    if has_shading:
+        mask = _compute_shading_mask(solar_pos, horizon_azimuths, horizon_elevations)
+        dni  = dni * mask.astype(np.float32)
 
     # Hay-Davies anisotropy index: F = DNI / ETR  (circumsolar fraction)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -319,6 +337,94 @@ def compute_orientation_grid(
     energy_grid = (p_ac_net.sum(axis=0) / 1000.0).astype(np.float32)   # (T, A) kWh
 
     return energy_grid
+
+
+# ---------------------------------------------------------------------------
+# One-at-a-time sensitivity sweep
+# ---------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def compute_sensitivity(
+    tmy_df: pd.DataFrame,
+    lat: float,
+    lon: float,
+    elevation_m: float,
+    base_tilt: float,
+    base_az: float,
+    base_yield: float,
+    module_params: pd.Series,
+    inverter_params: pd.Series,
+    inverter_type: str,
+    n_modules: int,
+    strings_per_inverter: int,
+    n_inverters: int,
+    loss_budget: LossBudget,
+    albedo: float = 0.20,
+    data_source: str = "",
+    horizon_azimuths: tuple[float, ...] | None = None,
+    horizon_elevations: tuple[float, ...] | None = None,
+) -> dict[str, tuple[float, float]]:
+    """
+    One-at-a-time sensitivity sweep.
+
+    Varies each parameter between a low and high extreme (all others held at base)
+    and returns the annual yield at each end.
+
+    Returns
+    -------
+    dict mapping label → (low_yield_kwh, high_yield_kwh)
+    """
+    def _sim(tilt=base_tilt, az=base_az, lb=loss_budget, alb=albedo):
+        r = run_simulation(
+            tmy_df=tmy_df, lat=lat, lon=lon, elevation_m=elevation_m,
+            tilt_deg=tilt, panel_az_deg=az,
+            module_params=module_params, inverter_params=inverter_params,
+            inverter_type=inverter_type, n_modules=n_modules,
+            strings_per_inverter=strings_per_inverter, n_inverters=n_inverters,
+            loss_budget=lb, albedo=alb, data_source=data_source,
+            horizon_azimuths=horizon_azimuths, horizon_elevations=horizon_elevations,
+        )
+        return r.annual_yield_kwh
+
+    results: dict[str, tuple[float, float]] = {}
+
+    # Tilt ±20°
+    results["Panel tilt"] = (
+        _sim(tilt=max(base_tilt - 20.0, 0.0)),
+        _sim(tilt=min(base_tilt + 20.0, 90.0)),
+    )
+
+    # Azimuth ±30°
+    results["Panel azimuth"] = (
+        _sim(az=(base_az - 30.0) % 360.0),
+        _sim(az=(base_az + 30.0) % 360.0),
+    )
+
+    # Soiling 0% vs 5%
+    results["Soiling"] = (
+        _sim(lb=dataclasses.replace(loss_budget, soiling=0.0)),
+        _sim(lb=dataclasses.replace(loss_budget, soiling=0.05)),
+    )
+
+    # LID 0% vs 3%
+    results["Light-induced degradation"] = (
+        _sim(lb=dataclasses.replace(loss_budget, lid=0.0)),
+        _sim(lb=dataclasses.replace(loss_budget, lid=0.03)),
+    )
+
+    # Mismatch 0% vs 3%
+    results["Module mismatch"] = (
+        _sim(lb=dataclasses.replace(loss_budget, mismatch=0.0)),
+        _sim(lb=dataclasses.replace(loss_budget, mismatch=0.03)),
+    )
+
+    # Albedo 0.10 vs 0.40
+    results["Ground albedo"] = (
+        _sim(alb=0.10),
+        _sim(alb=0.40),
+    )
+
+    return results
 
 
 # ---------------------------------------------------------------------------

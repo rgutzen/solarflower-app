@@ -81,6 +81,17 @@ Berlin (52.5°N), 20 × 400W = 8 kWp CEC monocrystalline, S-facing 35°, Open-Me
 `n_modules, strings_per_inverter, n_inverters, loss_budget (LossBudget),`
 `tilt_step, az_step, fetch_climate (bool), econ (dict | None)`
 
+## New Functions Added (session 2, 2026-03-09)
+- `core/energy.py`: `compute_sensitivity(...)` → `dict[str, tuple[float, float]]`
+  - One-at-a-time sweep: tilt±20°, azimuth±30°, soiling 0–5%, LID 0–3%, mismatch 0–3%, albedo 0.10–0.40
+  - Calls `run_simulation()` 12× (all `@st.cache_data`); uses `dataclasses.replace()` for LossBudget
+- `core/energy.py`: `compute_orientation_grid()` now accepts `horizon_azimuths/horizon_elevations`
+  - Applies `_compute_shading_mask()` to 1D `dni` before the `(N,T,A)` broadcast
+- `ui/charts.py`: `sensitivity_tornado(sensitivity, base_yield)` → `go.Figure`
+  - Horizontal tornado bar chart: TERRACOTTA (low) + EARTH_COLOR (high), ref line at base yield
+- `app.py`: sensitivity expander added to Tab 1 (Annual Summary), after Loss Budget Detail expander
+- `app.py`: `compute_orientation_grid()` receives `horizon_azimuths/horizon_elevations` from `cfg`
+
 ## Decisions Made
 - Tabs: Annual Summary / Orientation Optimizer / Monthly Breakdown / Daily Irradiance / Sun Path / Economics
 - Metric bar: DC Peak | Annual Yield | Specific Yield | PR | CF | Avg Daily | Data Source

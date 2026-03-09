@@ -12,6 +12,7 @@ Run:
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 import numpy as np
@@ -20,7 +21,12 @@ import streamlit as st
 
 from core.climate import fetch_tmy
 from core.system import load_cec_modules, load_cec_inverters
-from core.energy import run_simulation, compute_orientation_grid, peak_power_kw
+from core.energy import (
+    run_simulation,
+    compute_orientation_grid,
+    compute_sensitivity,
+    peak_power_kw,
+)
 from ui.sidebar import render_sidebar
 from ui import charts
 
@@ -43,10 +49,31 @@ if os.path.exists(css_path):
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
+# Dark mode toggle (persisted in session state)
+# ---------------------------------------------------------------------------
+if "dark_mode" not in st.session_state:
+    st.session_state["dark_mode"] = False
+
+dark_mode = st.sidebar.toggle(
+    "Dark mode",
+    value=st.session_state["dark_mode"],
+    key="dark_mode",
+)
+
+if dark_mode:
+    dark_css_path = os.path.join(os.path.dirname(__file__), "ui", "styles_dark.css")
+    if os.path.exists(dark_css_path):
+        with open(dark_css_path, "r") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Tell the chart module which palette to use
+charts.set_dark_mode(dark_mode)
+
+# ---------------------------------------------------------------------------
 # Load databases (cached across all sessions)
 # ---------------------------------------------------------------------------
 with st.spinner("Loading module and inverter databases…"):
-    cec_modules   = load_cec_modules()
+    cec_modules = load_cec_modules()
     cec_inverters = load_cec_inverters()
 
 # ---------------------------------------------------------------------------
@@ -71,7 +98,7 @@ if cfg["fetch_climate"] or st.session_state["tmy_df"] is None:
             st.error(f"Climate data fetch failed: {e}")
             st.stop()
 
-tmy_df      = st.session_state["tmy_df"]
+tmy_df = st.session_state["tmy_df"]
 data_source = st.session_state["data_source"]
 
 # ---------------------------------------------------------------------------
@@ -192,14 +219,16 @@ st.markdown("---")
 # ---------------------------------------------------------------------------
 # Main tabs
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "Annual Summary",
-    "Orientation Optimizer",
-    "Monthly Breakdown",
-    "Daily Irradiance",
-    "Sun Path",
-    "Economics",
-])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    [
+        "Annual Summary",
+        "Orientation Optimizer",
+        "Monthly Breakdown",
+        "Daily Irradiance",
+        "Sun Path",
+        "Economics",
+    ]
+)
 
 # ---- Tab 1: Annual Summary ------------------------------------------------
 with tab1:
@@ -227,24 +256,61 @@ with tab1:
             "to explore different scenarios."
         )
         losses_dict = cfg["loss_budget"].as_dict()
-        loss_df = pd.DataFrame({
-            "Loss category": list(losses_dict.keys()),
-            "Loss [%]": [f"{v*100:.2f}%" for v in losses_dict.values()],
-            "Energy lost [kWh/yr]": [
-                f"{result.loss_waterfall.get(k, 0):.0f}"
-                for k in losses_dict.keys()
-            ],
-        })
+        loss_df = pd.DataFrame(
+            {
+                "Loss category": list(losses_dict.keys()),
+                "Loss [%]": [f"{v*100:.2f}%" for v in losses_dict.values()],
+                "Energy lost [kWh/yr]": [
+                    f"{result.loss_waterfall.get(k, 0):.0f}"
+                    for k in losses_dict.keys()
+                ],
+            }
+        )
         st.dataframe(loss_df, use_container_width=True, hide_index=True)
+
+    with st.expander("Sensitivity Analysis — What Moves Your Yield?"):
+        st.caption(
+            "Each bar shows the annual yield when one parameter is set to its low or high "
+            "extreme — all other parameters held at their current values. "
+            "Longer bars = higher sensitivity. Adjust inputs in the sidebar to see how "
+            "this ranking changes."
+        )
+        with st.spinner("Computing sensitivity (12 simulations)…"):
+            sensitivity = compute_sensitivity(
+                tmy_df=tmy_df,
+                lat=cfg["lat"],
+                lon=cfg["lon"],
+                elevation_m=cfg["elevation_m"],
+                base_tilt=cfg["tilt_deg"],
+                base_az=cfg["panel_az_deg"],
+                base_yield=result.annual_yield_kwh,
+                module_params=cfg["module_params"],
+                inverter_params=cfg["inverter_params"],
+                inverter_type=cfg["inverter_type"],
+                n_modules=cfg["n_modules"],
+                strings_per_inverter=cfg["strings_per_inverter"],
+                n_inverters=cfg["n_inverters"],
+                loss_budget=cfg["loss_budget"],
+                albedo=cfg["albedo"],
+                data_source=data_source,
+                horizon_azimuths=cfg.get("horizon_azimuths"),
+                horizon_elevations=cfg.get("horizon_elevations"),
+            )
+        st.plotly_chart(
+            charts.sensitivity_tornado(sensitivity, result.annual_yield_kwh),
+            width="stretch",
+        )
 
     with st.expander("Lifetime Yield Projection"):
         from core.degradation import compute_lifetime_yield
 
-        lt_years  = st.slider("Projection horizon [years]", 10, 30, 25, step=1, key="lt_years")
-        deg_rate  = cfg.get("degradation_rate", 0.005)
-        lt_yield  = compute_lifetime_yield(result.annual_yield_kwh, deg_rate, lt_years)
+        lt_years = st.slider(
+            "Projection horizon [years]", 10, 30, 25, step=1, key="lt_years"
+        )
+        deg_rate = cfg.get("degradation_rate", 0.005)
+        lt_yield = compute_lifetime_yield(result.annual_yield_kwh, deg_rate, lt_years)
         total_kwh = float(np.cumsum(lt_yield)[-1])
-        yr_pct    = lt_yield[-1] / lt_yield[0] * 100 if lt_yield[0] > 0 else 0.0
+        yr_pct = lt_yield[-1] / lt_yield[0] * 100 if lt_yield[0] > 0 else 0.0
 
         kpi_lt1, kpi_lt2, kpi_lt3 = st.columns(3)
         kpi_lt1.metric(
@@ -266,18 +332,38 @@ with tab1:
     with st.expander("Download Results"):
         import json
 
-        monthly_export_df = pd.DataFrame({
-            "Month": ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-            "Avg_daily_yield_kWh_day": result.monthly_yield_kwh_day.values.round(3),
-            "Performance_Ratio": (result.monthly_pr * 100).values.round(2),
-        })
+        monthly_export_df = pd.DataFrame(
+            {
+                "Month": [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ],
+                "Avg_daily_yield_kWh_day": result.monthly_yield_kwh_day.values.round(
+                    3
+                ),
+                "Performance_Ratio": (result.monthly_pr * 100).values.round(2),
+            }
+        )
 
         summary = {
             "location": {
-                "lat": cfg["lat"], "lon": cfg["lon"], "elevation_m": cfg["elevation_m"],
+                "lat": cfg["lat"],
+                "lon": cfg["lon"],
+                "elevation_m": cfg["elevation_m"],
             },
             "orientation": {
-                "tilt_deg": cfg["tilt_deg"], "azimuth_deg": cfg["panel_az_deg"],
+                "tilt_deg": cfg["tilt_deg"],
+                "azimuth_deg": cfg["panel_az_deg"],
             },
             "system": {
                 "peak_power_kw": round(result.peak_power_kw, 3),
@@ -294,11 +380,26 @@ with tab1:
             "monthly_yield_kwh_day": {
                 m: round(v, 3)
                 for m, v in zip(
-                    ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+                    [
+                        "Jan",
+                        "Feb",
+                        "Mar",
+                        "Apr",
+                        "May",
+                        "Jun",
+                        "Jul",
+                        "Aug",
+                        "Sep",
+                        "Oct",
+                        "Nov",
+                        "Dec",
+                    ],
                     result.monthly_yield_kwh_day.values,
                 )
             },
-            "loss_waterfall_kwh": {k: round(v, 1) for k, v in result.loss_waterfall.items()},
+            "loss_waterfall_kwh": {
+                k: round(v, 1) for k, v in result.loss_waterfall.items()
+            },
         }
 
         col_dl1, col_dl2 = st.columns(2)
@@ -328,7 +429,7 @@ with tab2:
     )
 
     tilt_arr = np.arange(0, 91, cfg["tilt_step"])
-    az_arr   = np.arange(0, 360, cfg["az_step"])
+    az_arr = np.arange(0, 360, cfg["az_step"])
 
     with st.spinner(f"Computing {len(tilt_arr) * len(az_arr)}-orientation sweep…"):
         energy_grid = compute_orientation_grid(
@@ -346,6 +447,8 @@ with tab2:
             tilt_arr=tilt_arr,
             az_arr=az_arr,
             albedo=cfg["albedo"],
+            horizon_azimuths=cfg.get("horizon_azimuths"),
+            horizon_elevations=cfg.get("horizon_elevations"),
         )
 
     if energy_grid is not None:
@@ -357,7 +460,9 @@ with tab2:
         col_a, col_b = st.columns(2)
         with col_a:
             st.plotly_chart(
-                charts.yield_vs_tilt(energy_grid, tilt_arr, az_arr, cfg["panel_az_deg"], cfg["tilt_deg"]),
+                charts.yield_vs_tilt(
+                    energy_grid, tilt_arr, az_arr, cfg["panel_az_deg"], cfg["tilt_deg"]
+                ),
                 width="stretch",
             )
         with col_b:
@@ -365,7 +470,11 @@ with tab2:
             st.metric(
                 "Best orientation found",
                 f"Tilt {opt_tilt:.0f}°, facing {opt_az:.0f}°",
-                delta=f"+{delta:.0f} kWh/yr vs your selection" if delta > 0 else "already optimal",
+                delta=(
+                    f"+{delta:.0f} kWh/yr vs your selection"
+                    if delta > 0
+                    else "already optimal"
+                ),
                 help="The tilt and facing direction that maximise annual yield at this location.",
             )
             st.metric("Best annual yield", f"{opt_kwh:,.0f} kWh/yr")
@@ -397,8 +506,11 @@ with tab3:
         with st.spinner("Simulating optimal orientation…"):
             opt_result = run_simulation(
                 tmy_df=tmy_df,
-                lat=cfg["lat"], lon=cfg["lon"], elevation_m=cfg["elevation_m"],
-                tilt_deg=float(tilt_arr[oi]), panel_az_deg=float(az_arr[oj]),
+                lat=cfg["lat"],
+                lon=cfg["lon"],
+                elevation_m=cfg["elevation_m"],
+                tilt_deg=float(tilt_arr[oi]),
+                panel_az_deg=float(az_arr[oj]),
                 module_params=cfg["module_params"],
                 inverter_params=cfg["inverter_params"],
                 inverter_type=cfg["inverter_type"],
@@ -413,15 +525,32 @@ with tab3:
         st.info("The orientation sweep runs automatically — results will appear here.")
 
     st.plotly_chart(
-        charts.monthly_summary(result.monthly_yield_kwh_day, result.monthly_pr, monthly_opt),
+        charts.monthly_summary(
+            result.monthly_yield_kwh_day, result.monthly_pr, monthly_opt
+        ),
         width="stretch",
     )
 
-    monthly_df = pd.DataFrame({
-        "Month": ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-        "Avg daily yield [kWh/day]": result.monthly_yield_kwh_day.values.round(2),
-        "Performance Ratio [%]": (result.monthly_pr * 100).values.round(1),
-    })
+    monthly_df = pd.DataFrame(
+        {
+            "Month": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ],
+            "Avg daily yield [kWh/day]": result.monthly_yield_kwh_day.values.round(2),
+            "Performance Ratio [%]": (result.monthly_pr * 100).values.round(1),
+        }
+    )
     if monthly_opt is not None:
         monthly_df["Optimal orientation [kWh/day]"] = monthly_opt.values.round(2)
     st.dataframe(monthly_df, use_container_width=True, hide_index=True)
@@ -435,9 +564,12 @@ with tab4:
         "**Ground reflected** (green) bounces off the ground in front of tilted panels."
     )
     import datetime
+
     doy = st.slider(
         "Day of year",
-        1, 365, 172,
+        1,
+        365,
+        172,
         format="%d",
         help=(
             "Drag to explore different times of year. "
@@ -445,13 +577,21 @@ with tab4:
             "Day 355 = Dec 21 (winter solstice, N hemisphere)"
         ),
     )
-    date_label = (datetime.date(2023, 1, 1) + datetime.timedelta(days=doy - 1)).strftime("%B %d")
+    date_label = (
+        datetime.date(2023, 1, 1) + datetime.timedelta(days=doy - 1)
+    ).strftime("%B %d")
     st.caption(f"Showing: **{date_label}** (day {doy})")
 
     st.plotly_chart(
         charts.daily_irradiance(
-            tmy_df, cfg["lat"], cfg["lon"], cfg["elevation_m"],
-            cfg["tilt_deg"], cfg["panel_az_deg"], cfg["albedo"], doy,
+            tmy_df,
+            cfg["lat"],
+            cfg["lon"],
+            cfg["elevation_m"],
+            cfg["tilt_deg"],
+            cfg["panel_az_deg"],
+            cfg["albedo"],
+            doy,
         ),
         width="stretch",
     )
@@ -468,7 +608,9 @@ with tab5:
     )
     doy_sp = st.slider(
         "Selected day",
-        1, 365, 172,
+        1,
+        365,
+        172,
         key="doy_sp",
         help=(
             "Day 172 = June 21 (summer solstice)  ·  "
@@ -481,12 +623,16 @@ with tab5:
         width="stretch",
     )
 
-    hz_az  = cfg.get("horizon_azimuths", (0, 45, 90, 135, 180, 225, 270, 315))
-    hz_el  = cfg.get("horizon_elevations", (0.0,) * 8)
+    hz_az = cfg.get("horizon_azimuths", (0, 45, 90, 135, 180, 225, 270, 315))
+    hz_el = cfg.get("horizon_elevations", (0.0,) * 8)
     if any(e > 0 for e in hz_el):
         st.plotly_chart(
             charts.horizon_profile_chart(
-                cfg["lat"], cfg["lon"], cfg["elevation_m"], hz_az, hz_el,
+                cfg["lat"],
+                cfg["lon"],
+                cfg["elevation_m"],
+                hz_az,
+                hz_el,
             ),
             width="stretch",
         )
@@ -513,13 +659,24 @@ with tab6:
         kpi_cols[1].metric("Yr 1 savings", f"€{econ.annual_savings_yr1:,.0f}/yr")
         kpi_cols[2].metric(
             "Simple payback",
-            f"{econ.simple_payback_yr:.1f} yr" if econ.simple_payback_yr < 50 else "> 50 yr",
+            (
+                f"{econ.simple_payback_yr:.1f} yr"
+                if econ.simple_payback_yr < 50
+                else "> 50 yr"
+            ),
             help="Undiscounted: capital cost divided by first-year savings.",
         )
-        irr_str = f"IRR {econ.irr_pct:.1f}%" if not (econ.irr_pct != econ.irr_pct) else "IRR N/A"
+        irr_str = (
+            f"IRR {econ.irr_pct:.1f}%"
+            if not (econ.irr_pct != econ.irr_pct)
+            else "IRR N/A"
+        )
         kpi_cols[3].metric("NPV", f"€{econ.npv_eur:,.0f}", delta=irr_str)
-        kpi_cols[4].metric("LCOE", f"€{econ.lcoe_eur_kwh:.3f}/kWh",
-                           help="Levelised cost of energy — compare with your grid tariff.")
+        kpi_cols[4].metric(
+            "LCOE",
+            f"€{econ.lcoe_eur_kwh:.3f}/kWh",
+            help="Levelised cost of energy — compare with your grid tariff.",
+        )
 
         st.plotly_chart(charts.cashflow_chart(econ), width="stretch")
 
@@ -527,20 +684,31 @@ with tab6:
             st.plotly_chart(charts.yield_degradation_chart(econ), width="stretch")
 
         with st.expander("Assumptions"):
-            st.dataframe(pd.DataFrame({
-                "Parameter": [
-                    "System cost", "Electricity price (yr 1)", "Price escalation",
-                    "Discount rate", "Module degradation", "Feed-in fraction",
-                    "Feed-in tariff", "Project lifetime",
-                ],
-                "Value": [
-                    f"€{econ_cfg['cost_per_wp']:.2f}/Wp",
-                    f"€{econ_cfg['elec_price']:.2f}/kWh",
-                    f"{econ_cfg['escalation']*100:.1f}%/yr",
-                    f"{econ_cfg['discount']*100:.1f}%/yr",
-                    f"{econ_cfg['degradation']*100:.2f}%/yr",
-                    f"{econ_cfg['feed_in_frac']*100:.0f}%",
-                    f"€{econ_cfg['feed_in_tariff']:.2f}/kWh",
-                    f"{econ_cfg['lifetime_yr']} years",
-                ],
-            }), use_container_width=True, hide_index=True)
+            st.dataframe(
+                pd.DataFrame(
+                    {
+                        "Parameter": [
+                            "System cost",
+                            "Electricity price (yr 1)",
+                            "Price escalation",
+                            "Discount rate",
+                            "Module degradation",
+                            "Feed-in fraction",
+                            "Feed-in tariff",
+                            "Project lifetime",
+                        ],
+                        "Value": [
+                            f"€{econ_cfg['cost_per_wp']:.2f}/Wp",
+                            f"€{econ_cfg['elec_price']:.2f}/kWh",
+                            f"{econ_cfg['escalation']*100:.1f}%/yr",
+                            f"{econ_cfg['discount']*100:.1f}%/yr",
+                            f"{econ_cfg['degradation']*100:.2f}%/yr",
+                            f"{econ_cfg['feed_in_frac']*100:.0f}%",
+                            f"€{econ_cfg['feed_in_tariff']:.2f}/kWh",
+                            f"{econ_cfg['lifetime_yr']} years",
+                        ],
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
