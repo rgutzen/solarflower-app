@@ -26,6 +26,20 @@ import {
 import * as compass from './compass.js';
 
 // ===========================================================================
+// API Configuration
+// ===========================================================================
+
+/**
+ * Solarflower REST API base URL.
+ * Set to the deployed api/ FastAPI service to enable PVGIS TMY-backed yield
+ * estimates. If null (or if the call fails), the local JS model is used.
+ *
+ * Deploy the api/ directory and replace null with your URL, e.g.:
+ *   const API_BASE = 'https://solarflower-api.railway.app';
+ */
+const API_BASE = null;
+
+// ===========================================================================
 // State
 // ===========================================================================
 
@@ -36,6 +50,7 @@ const state = {
   optimalTilt: null,
   optimalAzimuth: null,
   optimalYield: null,      // kWh/kWp at optimal orientation
+  yieldScaleFactor: 1.0,  // ratio of API yield to local model yield (applied to sensor frames)
   currentHeading: null,    // from compass sensor (= panel azimuth)
   currentTilt: null,       // from accelerometer (= panel tilt)
   currentAccuracy: null,   // compass accuracy in degrees (iOS only, null = unknown)
@@ -362,6 +377,83 @@ function showManualEntry(message) {
 }
 
 // ===========================================================================
+// REST API — PVGIS TMY-backed yield estimate
+// ===========================================================================
+
+/**
+ * Call POST /api/estimate on the Solarflower API.
+ * Returns the parsed JSON response, or null on error / when API_BASE is unset.
+ *
+ * @param {number} lat
+ * @param {number} lon
+ * @param {number} tilt    — panel tilt in degrees
+ * @param {number} azimuth — panel azimuth in degrees (0=N, 180=S)
+ * @returns {Promise<object|null>}
+ */
+async function fetchApiEstimate(lat, lon, tilt, azimuth) {
+  if (!API_BASE) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/estimate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lat,
+        lon,
+        tilt_deg: tilt,
+        azimuth_deg: azimuth,
+        peak_power_kwp: 1.0,      // normalise to 1 kWp → response IS kWh/kWp
+        system_loss_pct: 14.0,
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Apply a successful API response: update optimal orientation + yield scale.
+ *
+ * @param {object} result          — parsed /api/estimate response
+ * @param {number} localOptimal    — yield from local JS model at optimal orientation
+ */
+function applyApiResult(result, localOptimal) {
+  const apiYield = result.specific_yield_kwh_kwp;
+  if (!apiYield || apiYield <= 0) return;
+
+  // Refine optimal orientation from API coarse sweep if provided
+  if (result.optimal_tilt_deg !== undefined) {
+    state.optimalTilt = result.optimal_tilt_deg;
+    dom.optimalTilt.textContent = `${Math.round(state.optimalTilt)}°`;
+    positionTiltTarget(state.optimalTilt);
+    updateTiltZoneArcs(state.optimalTilt);
+  }
+  if (result.optimal_azimuth_deg !== undefined) {
+    state.optimalAzimuth = result.optimal_azimuth_deg;
+    dom.optimalAzimuth.textContent =
+      `${Math.round(state.optimalAzimuth)}° (${azimuthToCardinal(state.optimalAzimuth)})`;
+    dom.compassTarget.setAttribute(
+      'transform', `rotate(${state.optimalAzimuth} 150 150)`,
+    );
+    updateCompassZoneArcs(state.optimalAzimuth);
+  }
+
+  // Scale live-sensor yield frames to match PVGIS TMY calibration
+  state.yieldScaleFactor = localOptimal > 0 ? apiYield / localOptimal : 1.0;
+  state.optimalYield = apiYield;
+
+  // Refresh displayed optimal yield
+  dom.yieldOptimal.textContent =
+    `${Math.round(apiYield).toLocaleString()} kWh/kWp`;
+  if (!state.sensorsActive) {
+    dom.statusYield.textContent =
+      `Optimal: ~${Math.round(apiYield).toLocaleString()} kWh/kWp/yr`;
+  }
+}
+
+// ===========================================================================
 // Location → Compute Optimal
 // ===========================================================================
 
@@ -379,8 +471,18 @@ function setLocation(lat, lon, displayName) {
   state.optimalTilt = tilt;
   state.optimalAzimuth = azimuth;
 
-  // Compute optimal yield (reference)
+  // Compute optimal yield — local JS model (immediate, no network)
   state.optimalYield = estimateYieldKwhPerKwp(lat, tilt, azimuth);
+  state.yieldScaleFactor = 1.0;
+
+  // Kick off API request in background (enhances accuracy when it returns)
+  const localOptimal = state.optimalYield;
+  fetchApiEstimate(lat, lon, tilt, azimuth).then(result => {
+    // Guard: ignore if user has since selected a different location
+    if (result && state.lat === lat && state.lon === lon) {
+      applyApiResult(result, localOptimal);
+    }
+  });
 
   // Show optimal values
   dom.optimalTilt.textContent = `${tilt}°`;
@@ -478,7 +580,10 @@ function updateUI() {
   // 1. Compute yield from live sensor readings
   // -----------------------------------------------------------------------
   const useTilt = currentTilt !== null ? currentTilt : optimalTilt;
-  state.currentYield = estimateYieldKwhPerKwp(lat, useTilt, currentHeading);
+  // Apply yieldScaleFactor so live-sensor estimates match the PVGIS TMY calibration
+  state.currentYield = Math.round(
+    estimateYieldKwhPerKwp(lat, useTilt, currentHeading) * state.yieldScaleFactor
+  );
   state.currentPct = optimalYield > 0
     ? Math.round((state.currentYield / optimalYield) * 100)
     : 0;
