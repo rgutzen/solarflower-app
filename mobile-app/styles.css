@@ -99,6 +99,16 @@
    1. Reset & Base
    -------------------------------------------------------------------------- */
 
+/* Visually hidden but accessible (used for the contrast toggle checkbox) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -172,6 +182,7 @@ body.sensors-active {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   width: 36px;
   height: 36px;
   border: 1px solid rgba(27, 46, 27, 0.1);
@@ -190,11 +201,7 @@ body.sensors-active {
   color: var(--amber-dark);
 }
 
-body.high-contrast .header__contrast-btn {
-  background: var(--amber);
-  color: var(--ink);
-  border-color: var(--amber);
-}
+/* Active state is handled in section 17 via :has(#contrast-toggle:checked) */
 
 /* --------------------------------------------------------------------------
    3. Main App Container
@@ -986,17 +993,85 @@ body.high-contrast .header__contrast-btn {
 }
 
 /* --------------------------------------------------------------------------
-   17. High-contrast outdoor mode (optional toggle via JS)
+   17. High-contrast outdoor mode
+   Triggered via CSS :has() — works without JavaScript (including VSCode preview).
+   Toggle: <input id="contrast-toggle" type="checkbox"> in the header.
+   Designed for direct sunlight readability: stark white, near-black text,
+   saturated feedback colors, visible borders, boosted SVG visibility.
    -------------------------------------------------------------------------- */
 
-body.high-contrast {
-  --bg: #FFFFFF;
-  --bg-warm: #FFFFFF;
-  --ink: #000000;
-  --ink-light: #333333;
+body:has(#contrast-toggle:checked) {
+  /* Stark white surfaces */
+  --bg:          #FFFFFF;
+  --bg-warm:     #FFFCF0;
+  /* Near-black text */
+  --ink:         #0A0A0A;
+  --ink-light:   #1C1C1C;
+  /* Saturated feedback — easier to read in glare */
+  --amber:       #E08A00;
+  --amber-light: #FFE066;
+  --amber-dark:  #7A4D00;
+  --green-light: #BBF0BB;
+  --green-pale:  #D4F5D4;
+  --green-dark:  #155724;
+  --success:     #15803D;
+  --red:         #B91C1C;
+  --grey:        #374151;
+  --grey-light:  #DEDEDE;
+  /* Stronger shadows */
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.12);
 }
 
-body.high-contrast .compass__svg,
-body.high-contrast .tilt__svg {
-  filter: contrast(1.3);
+/* Boost SVG ring/tick contrast — inline opacity="0.08" becomes visible */
+body:has(#contrast-toggle:checked) .compass__svg,
+body:has(#contrast-toggle:checked) .tilt__svg {
+  filter: contrast(2);
+}
+
+/* Active state for the label when checked */
+body:has(#contrast-toggle:checked) .header__contrast-btn {
+  background: var(--amber);
+  color: var(--ink);
+  border-color: var(--amber);
+}
+
+/* Stronger card borders — section boundaries clear in glare */
+body:has(#contrast-toggle:checked) .optimal,
+body:has(#contrast-toggle:checked) .yield,
+body:has(#contrast-toggle:checked) .status {
+  border-width: 2px;
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+/* Status states — saturated solid backgrounds for glanceable feedback */
+body:has(#contrast-toggle:checked) .status--on-target {
+  background: #CDEFCD;
+  border-color: rgba(21, 128, 61, 0.5);
+}
+
+body:has(#contrast-toggle:checked) .status--close {
+  background: #FFE57A;
+  border-color: rgba(122, 77, 0, 0.45);
+}
+
+body:has(#contrast-toggle:checked) .status--off {
+  background: #E0E0E0;
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+/* Yield card state backgrounds */
+body:has(#contrast-toggle:checked) .yield--on-target {
+  background: linear-gradient(135deg, #CDEFCD 0%, #FFFFFF 100%);
+  border-color: rgba(21, 128, 61, 0.4);
+}
+
+body:has(#contrast-toggle:checked) .yield--close {
+  background: linear-gradient(135deg, #FFE57A 0%, #FFFFFF 100%);
+  border-color: rgba(122, 77, 0, 0.4);
+}
+
+/* Guidance text — heavier weight improves legibility in sunlight */
+body:has(#contrast-toggle:checked) .compass__delta,
+body:has(#contrast-toggle:checked) .tilt__delta {
+  font-weight: 700;
 }

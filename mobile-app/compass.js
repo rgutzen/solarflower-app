@@ -22,6 +22,8 @@
 
 const SMOOTHING_FACTOR = 0.25;  // Exponential smoothing α (0–1, higher = less smooth)
 const MIN_UPDATE_INTERVAL = 16; // ~60fps cap (ms)
+const WATCHDOG_TIMEOUT = 5000;  // ms before reporting sensor-timeout if no event fires
+const VARIANCE_WINDOW = 10;     // readings for Android accuracy estimate
 
 // ---------------------------------------------------------------------------
 // State
@@ -32,20 +34,23 @@ let _tilt = null;        // Smoothed panel tilt (0–90°)
 let _rawBeta = null;     // Raw beta from sensor
 let _rawGamma = null;    // Raw gamma from sensor
 let _isActive = false;
-let _callback = null;    // User-provided callback: ({ heading, tilt, accuracy }) => void
+let _callback = null;    // User-provided callback: ({ heading, tilt, accuracy, lowAccuracy }) => void
+let _onError = null;     // Optional error callback: (type: string) => void
 let _lastUpdate = 0;
 let _sensorType = null;  // 'absolute' | 'standard' | 'none'
 let _permissionState = 'unknown'; // 'unknown' | 'granted' | 'denied' | 'not-needed'
+let _watchdogTimer = null;
+const _recentHeadings = [];      // Ring buffer for Android accuracy detection
 
 // ---------------------------------------------------------------------------
-// Smoothing helpers
+// Smoothing helpers (exported for testing)
 // ---------------------------------------------------------------------------
 
 /**
  * Exponential smoothing for circular quantities (angles in degrees).
  * Handles the 0°/360° wrap-around correctly.
  */
-function smoothAngle(prev, curr, alpha) {
+export function smoothAngle(prev, curr, alpha) {
   if (prev === null) return curr;
 
   // Convert to radians for vector averaging
@@ -63,9 +68,33 @@ function smoothAngle(prev, curr, alpha) {
 /**
  * Exponential smoothing for linear quantities.
  */
-function smoothLinear(prev, curr, alpha) {
+export function smoothLinear(prev, curr, alpha) {
   if (prev === null) return curr;
   return (1 - alpha) * prev + alpha * curr;
+}
+
+// ---------------------------------------------------------------------------
+// Android accuracy estimate (circular variance over recent headings)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when heading variance is high — proxy for low compass accuracy.
+ * Uses mean resultant length R: R=1 (consistent) → R=0 (random noise).
+ * Requires at least VARIANCE_WINDOW readings before returning true.
+ */
+function isLowAccuracy(heading) {
+  _recentHeadings.push(heading);
+  if (_recentHeadings.length > VARIANCE_WINDOW) _recentHeadings.shift();
+  if (_recentHeadings.length < VARIANCE_WINDOW) return false;
+
+  let sinSum = 0, cosSum = 0;
+  for (const h of _recentHeadings) {
+    sinSum += Math.sin(h * Math.PI / 180);
+    cosSum += Math.cos(h * Math.PI / 180);
+  }
+  const n = _recentHeadings.length;
+  const R = Math.sqrt((sinSum / n) ** 2 + (cosSum / n) ** 2);
+  return R < 0.7; // Mean resultant length below 0.7 → noisy sensor
 }
 
 // ---------------------------------------------------------------------------
@@ -73,6 +102,12 @@ function smoothLinear(prev, curr, alpha) {
 // ---------------------------------------------------------------------------
 
 function onDeviceOrientation(event) {
+  // Clear watchdog on first event — sensor is responding
+  if (_watchdogTimer !== null) {
+    clearTimeout(_watchdogTimer);
+    _watchdogTimer = null;
+  }
+
   const now = performance.now();
   if (now - _lastUpdate < MIN_UPDATE_INTERVAL) return;
   _lastUpdate = now;
@@ -137,10 +172,13 @@ function onDeviceOrientation(event) {
 
   // Fire callback
   if (_callback && _heading !== null) {
+    const iosAccuracy = event.webkitCompassAccuracy ?? null;
     _callback({
       heading: Math.round(_heading * 10) / 10,
       tilt: _tilt !== null ? Math.round(_tilt * 10) / 10 : null,
-      accuracy: event.webkitCompassAccuracy || null,
+      accuracy: iosAccuracy,
+      // lowAccuracy: iOS uses reported accuracy; Android uses heading variance
+      lowAccuracy: iosAccuracy !== null ? iosAccuracy > 20 : isLowAccuracy(_heading),
     });
   }
 }
@@ -198,12 +236,15 @@ export function getPermissionState() {
  * Start listening to device orientation events.
  *
  * @param {function} callback — Called on each sensor update:
- *   ({ heading: number, tilt: number|null, accuracy: number|null }) => void
+ *   ({ heading: number, tilt: number|null, accuracy: number|null, lowAccuracy: boolean }) => void
+ * @param {function} [onError] — Called if sensors fail to fire within WATCHDOG_TIMEOUT:
+ *   (type: 'sensor-timeout') => void
  */
-export function start(callback) {
+export function start(callback, onError = null) {
   if (_isActive) return;
 
   _callback = callback;
+  _onError = onError;
 
   // Try absolute orientation first (true North heading)
   if ('ondeviceorientationabsolute' in window) {
@@ -216,12 +257,23 @@ export function start(callback) {
   }
 
   _isActive = true;
+
+  // Watchdog: report sensor-timeout if no orientation event fires within 5s
+  _watchdogTimer = setTimeout(() => {
+    _watchdogTimer = null;
+    if (_onError) _onError('sensor-timeout');
+  }, WATCHDOG_TIMEOUT);
 }
 
 /**
  * Stop listening to sensor events.
  */
 export function stop() {
+  if (_watchdogTimer !== null) {
+    clearTimeout(_watchdogTimer);
+    _watchdogTimer = null;
+  }
+
   if (!_isActive) return;
 
   if (_sensorType === 'absolute') {
@@ -234,7 +286,9 @@ export function stop() {
   _heading = null;
   _tilt = null;
   _callback = null;
+  _onError = null;
   _sensorType = null;
+  _recentHeadings.length = 0;
 }
 
 /**

@@ -28,5 +28,14 @@
   ],
   "categories": ["utilities", "education"],
   "lang": "en",
-  "dir": "ltr"
+  "dir": "ltr",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Open Panel Compass",
+      "short_name": "Compass",
+      "description": "Open the panel orientation helper",
+      "url": "./"
+    }
+  ]
 }
